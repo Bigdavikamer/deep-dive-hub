@@ -62,3 +62,42 @@ def material_for(palette, key, emission_strength=0.0):
 def assign_material(obj, mat):
     obj.data.materials.clear()
     obj.data.materials.append(mat)
+
+
+# ---- greybox/debug review colours (Phase 1-7 only; Phase 8 replaces these
+# with the real PALETTE-driven materials) ------------------------------------
+DEBUG_CATEGORY_COLORS = {
+    "Terrain": "#8E9AA3",
+    "Struct": "#C97B4A",
+    "Plaza": "#D8C8A6",
+    "Plot": "#4E7D52",
+    "Dock": "#7A4E2E",
+    "Prop": "#B8B0A0",
+    "Nature": "#3F5F42",
+    "Marker": "#A34B3C",
+    "UI": "#F2C46B",
+    "Lamp": "#F2C46B",
+    "Overhead": "#3D6B8C",
+    "Lore": "#A8E6C8",
+    "Sub": "#57C7D4",
+}
+
+
+def debug_color_for(obj_name):
+    for cat, hex_color in DEBUG_CATEGORY_COLORS.items():
+        if obj_name.startswith(f"DD_{cat}_"):
+            return hex_color
+    return "#FFFFFF"
+
+
+def apply_debug_colors(objs):
+    """Assign a category-coded flat colour to each object for greybox/gate
+    renders. Relying on Workbench's random per-object colouring turned out
+    to be unreliable across Blender versions; explicit materials always
+    render distinctly and cost nothing (Phase 8 overwrites them)."""
+    for o in objs:
+        if o.type != "MESH":
+            continue
+        hex_color = debug_color_for(o.name)
+        mat = get_material(f"DDPreview_{hex_color.lstrip('#')}", hex_color)
+        assign_material(o, mat)

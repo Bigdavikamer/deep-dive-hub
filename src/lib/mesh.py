@@ -33,14 +33,26 @@ def bm_to_object(name, bm, collection=None):
     return obj
 
 
-def box(name, size_x, size_y, size_z, base_z=0.0, collection=None):
-    """Axis-aligned box, origin at base centre (Roblox wants base-centre
-    origins, not volume-centre)."""
+def box(name, size_x, size_y, size_z, base_z=0.0, yaw=0.0, collection=None):
+    """Axis-aligned (or footprint-yawed) box, origin at base centre.
+
+    `yaw` (radians) is baked into the LOCAL vertex data, not the object
+    transform -- source kit / structural objects must keep identity
+    rotation (see CLAUDE.md HARD CONSTRAINTS > Transforms), so any rotation
+    a structural build needs (e.g. a plot pad facing the plaza) has to live
+    in the mesh itself. Use obj.location for translation-only placement
+    afterward; that's always allowed regardless.
+    """
     hx, hy = size_x / 2.0, size_y / 2.0
+    corners = [(-hx, -hy), (hx, -hy), (hx, hy), (-hx, hy)]
+    if yaw:
+        cos_y, sin_y = math.cos(yaw), math.sin(yaw)
+        corners = [(x * cos_y - y * sin_y, x * sin_y + y * cos_y) for x, y in corners]
+    (x0, y0), (x1, y1), (x2, y2), (x3, y3) = corners
     verts = [
-        (-hx, -hy, base_z), (hx, -hy, base_z), (hx, hy, base_z), (-hx, hy, base_z),
-        (-hx, -hy, base_z + size_z), (hx, -hy, base_z + size_z),
-        (hx, hy, base_z + size_z), (-hx, hy, base_z + size_z),
+        (x0, y0, base_z), (x1, y1, base_z), (x2, y2, base_z), (x3, y3, base_z),
+        (x0, y0, base_z + size_z), (x1, y1, base_z + size_z),
+        (x2, y2, base_z + size_z), (x3, y3, base_z + size_z),
     ]
     faces = [
         (0, 1, 2, 3),   # bottom
@@ -96,6 +108,36 @@ def annulus(name, inner_radius, outer_radius, base_z=0.0, segments=64, collectio
     for i in range(segments):
         j = (i + 1) % segments
         bm.faces.new((inner[i], inner[j], outer[j], outer[i]))
+    bm.normal_update()
+    return bm_to_object(name, bm, collection=collection)
+
+
+def wedge_solid(name, radius, angle_start_deg, angle_end_deg, thickness, segments=48, base_z=0.0, collection=None):
+    """A solid pie-wedge disc spanning [angle_start_deg, angle_end_deg] (CCW
+    from +X), full `radius`, extruded down by `thickness` below `base_z`.
+    Fully manifold, quads + triangle fans only, built directly (no boolean)
+    -- this is how the island greybox gets its gate notch without hitting
+    the boolean-cut n-gon/non-manifold failure mode CLAUDE.md warns about."""
+    bm = bmesh.new()
+    a0, a1 = math.radians(angle_start_deg), math.radians(angle_end_deg)
+    arc_top, arc_bot = [], []
+    for i in range(segments + 1):
+        t = a0 + (a1 - a0) * i / segments
+        x, y = radius * math.cos(t), radius * math.sin(t)
+        arc_top.append(bm.verts.new((x, y, base_z)))
+        arc_bot.append(bm.verts.new((x, y, base_z - thickness)))
+    center_top = bm.verts.new((0.0, 0.0, base_z))
+    center_bot = bm.verts.new((0.0, 0.0, base_z - thickness))
+    bm.verts.ensure_lookup_table()
+
+    for i in range(segments):
+        bm.faces.new((center_top, arc_top[i], arc_top[i + 1]))
+        bm.faces.new((center_bot, arc_bot[i + 1], arc_bot[i]))
+        bm.faces.new((arc_top[i], arc_top[i + 1], arc_bot[i + 1], arc_bot[i]))
+    bm.faces.new((center_top, arc_top[0], arc_bot[0], center_bot))
+    bm.faces.new((center_top, center_bot, arc_bot[segments], arc_top[segments]))
+
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     bm.normal_update()
     return bm_to_object(name, bm, collection=collection)
 

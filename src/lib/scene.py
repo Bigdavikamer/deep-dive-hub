@@ -98,3 +98,69 @@ def is_placed_instance(name):
     false for a source kit mesh (structural build or unplaced prop-kit
     object)."""
     return bool(PLACED_INSTANCE_RE.search(name))
+
+
+# ---- verification cameras / renders -----------------------------------------
+# Every phase gate needs a top-down ortho + an eye-level render. These live
+# here (not per-phase) so every p*_*.py script captures the same way.
+
+def setup_ortho_top_camera(name, ortho_scale, height=600.0):
+    """Camera looking straight down (-Z world) from directly above the
+    origin. Identity rotation already looks down -Z in Blender, so no
+    look-at math is needed."""
+    cam_data = bpy.data.cameras.get(name) or bpy.data.cameras.new(name)
+    cam_data.type = "ORTHO"
+    cam_data.ortho_scale = ortho_scale
+    cam_obj = bpy.data.objects.get(name)
+    if cam_obj is None:
+        cam_obj = bpy.data.objects.new(name, cam_data)
+        bpy.context.scene.collection.objects.link(cam_obj)
+    cam_obj.data = cam_data
+    cam_obj.location = (0.0, 0.0, height)
+    cam_obj.rotation_euler = (0.0, 0.0, 0.0)
+    return cam_obj
+
+
+def setup_eye_camera(name, location, facing_deg, fov_deg=70.0):
+    """Perspective camera at `location`, looking horizontally toward
+    `facing_deg` (0 = +X, CCW, matching config.py's angle convention)."""
+    import math
+
+    import mathutils
+
+    cam_data = bpy.data.cameras.get(name) or bpy.data.cameras.new(name)
+    cam_data.type = "PERSP"
+    cam_data.angle = math.radians(fov_deg)
+    cam_obj = bpy.data.objects.get(name)
+    if cam_obj is None:
+        cam_obj = bpy.data.objects.new(name, cam_data)
+        bpy.context.scene.collection.objects.link(cam_obj)
+    cam_obj.data = cam_data
+    cam_obj.location = location
+    forward = mathutils.Vector((math.cos(math.radians(facing_deg)), math.sin(math.radians(facing_deg)), 0.0))
+    cam_obj.rotation_euler = forward.to_track_quat("-Z", "Y").to_euler()
+    return cam_obj
+
+
+def render_to_file(camera_obj, filepath, resolution=(1600, 900), color_type="MATERIAL", xray=False):
+    """Render `camera_obj`'s view to `filepath` using Workbench (fast, no
+    lights required). color_type='MATERIAL' reads each object's assigned
+    colour (see lib.palette.apply_debug_colors for greybox/gate renders --
+    relying on Workbench's random per-object hash colouring proved
+    unreliable). `xray=True` is for top-down layout checks only: solid
+    terrain slabs otherwise occlude anything sitting below their top
+    surface (e.g. plot pads at PLOT_Z, which is below GROUND_Z)."""
+    scene = bpy.context.scene
+    scene.camera = camera_obj
+    scene.render.engine = "BLENDER_WORKBENCH"
+    scene.render.resolution_x = resolution[0]
+    scene.render.resolution_y = resolution[1]
+    scene.render.filepath = filepath
+    shading = scene.display.shading
+    shading.light = "STUDIO"
+    shading.color_type = color_type
+    shading.show_xray = xray
+    if xray:
+        shading.xray_alpha = 0.55
+    bpy.ops.render.render(write_still=True)
+    return filepath
