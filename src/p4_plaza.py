@@ -73,6 +73,10 @@ GATE_LANE_NAME = "The Descent"
 
 PATH_WIDTH = config.TRAFFIC_LANE_WIDTH
 PATH_THICKNESS = 2.0
+# Laid stone sits proud of the ground it is laid on. Without this the path
+# ribbons' top faces are exactly coplanar with the plaza deck's top face and
+# z-fight along their whole length in Studio.
+PATH_PROUD = 0.15
 BOW_MAGNITUDES = [10.0, 12.0, 9.0, 14.0, 8.0, 13.0, 11.0, 10.0]  # 8 paths, all within [8,14]
 
 STEP_RING_WIDTH = 3.0
@@ -213,15 +217,21 @@ def build_paths():
         bow = BOW_MAGNITUDES[i] * (1.0 if i % 2 == 0 else -1.0)
         obj = dd_mesh.bowed_path(
             f"DD_Struct_Path_Plot{i + 1:02d}", p0, p1, PATH_WIDTH, bow, PATH_THICKNESS,
-            base_z=config.PLAZA_LIFT,
+            base_z=config.PLAZA_LIFT + PATH_PROUD,
         )
         objs.append(_finish(obj))
 
+    # The gate path runs to the plaza's outer edge like every other lane, not
+    # out to ISLAND_RADIUS at GROUND_Z: that older form spent its first 105
+    # studs buried under the plaza deck, since it started at PLAZA_INNER_R but
+    # sat 1.5 studs lower than the deck it crossed. Phase 6 carries the lane on
+    # across the harbour foreshore from the step ring to the shore.
     p0 = (config.PLAZA_INNER_R, 0.0)
-    p1 = (config.ISLAND_RADIUS, 0.0)
+    p1 = (config.PLAZA_OUTER_R, 0.0)
     bow = BOW_MAGNITUDES[7]
     gate_obj = dd_mesh.bowed_path(
-        "DD_Struct_Path_Gate", p0, p1, PATH_WIDTH, bow, PATH_THICKNESS, base_z=config.GROUND_Z,
+        "DD_Struct_Path_Gate", p0, p1, PATH_WIDTH, bow, PATH_THICKNESS,
+        base_z=config.PLAZA_LIFT + PATH_PROUD,
     )
     objs.append(_finish(gate_obj, collection="Plaza"))
     return objs
@@ -243,14 +253,14 @@ def build_lane_signs():
         yaw = angle + math.pi / 2.0  # plaque faces the path (local +Y toward centre)
 
         post = dd_mesh.cylinder(f"DD_Struct_LaneSign_{idx}_Post", SIGN_POST_R, SIGN_POST_H, base_z=0.0, segments=8)
-        post.location = (x, y, 0.0)
+        post.location = (x, y, config.PLAZA_LIFT)  # r=36 is on the deck, not on ground
         objs.append(_finish(post))
 
         plaque = dd_mesh.box(
             f"DD_Struct_LaneSign_{idx}_Plaque", SIGN_PLAQUE_W, SIGN_PLAQUE_D, SIGN_PLAQUE_H,
             base_z=0.0, yaw=yaw,
         )
-        plaque.location = (x, y, SIGN_POST_H - SIGN_PLAQUE_H - 0.3)
+        plaque.location = (x, y, config.PLAZA_LIFT + SIGN_POST_H - SIGN_PLAQUE_H - 0.3)
         dd_mesh.set_quad_face_uv(plaque, face_index=4)  # +Y-facing face, clean quad for a future SurfaceGui name label
         objs.append(_finish(plaque))
     return objs
@@ -294,12 +304,12 @@ def build_banner_poles():
         x = cx + sign * reach * tangent[0]
         y = cy + sign * reach * tangent[1]
         pole = dd_mesh.cylinder(f"DD_Lamp_BannerPole_{suffix}", BANNER_POLE_R, BANNER_POLE_H, base_z=0.0, segments=8)
-        pole.location = (x, y, 0.0)
+        pole.location = (x, y, config.PLAZA_LIFT)  # the court is on the deck
         objs.append(_finish(pole))
 
         flag_w, flag_h = 3.0, 4.0
         flag = dd_mesh.box(f"DD_Lamp_BannerFlag_{suffix}", 0.2, flag_w, flag_h, base_z=0.0)
-        flag.location = (x, y + flag_w / 2.0, BANNER_POLE_H - flag_h - 0.5)
+        flag.location = (x, y + flag_w / 2.0, config.PLAZA_LIFT + BANNER_POLE_H - flag_h - 0.5)
         objs.append(_finish(flag))
     return objs
 
@@ -314,7 +324,7 @@ def build_leaderboard():
 
     dais_w = 3 * (config.LB_STELE_W + 4.0) + 10.0
     dais = dd_mesh.box("DD_UI_LeaderboardDais", dais_w, 20.0, config.LB_DAIS_H, base_z=0.0, yaw=face_yaw)
-    dais.location = (cx, cy, 0.0)
+    dais.location = (cx, cy, config.PLAZA_LIFT)  # LB_COURT_R=105 is on the deck
     objs = [_finish(dais)]
 
     spacing = config.LB_STELE_W + 4.0
@@ -325,7 +335,7 @@ def build_leaderboard():
         stele_yaw = math.radians(face_yaw_deg + i * config.LB_STELE_FAN)
         name = f"DD_UI_LeaderboardStele_{j + 1:02d}"
         stele = dd_mesh.box(name, config.LB_STELE_W, 4.0, config.LB_STELE_H, base_z=0.0, yaw=stele_yaw)
-        stele.location = (px, py, config.LB_DAIS_H)
+        stele.location = (px, py, config.PLAZA_LIFT + config.LB_DAIS_H)
         dd_mesh.set_quad_face_uv(stele, face_index=4)  # +Y-facing face: the SurfaceGui panel
         objs.append(_finish(stele))
     return objs

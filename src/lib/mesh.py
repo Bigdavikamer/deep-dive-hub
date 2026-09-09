@@ -440,6 +440,85 @@ def annulus_sector_solid(name, inner_radius, outer_radius, angle_start_deg, angl
     return bm_to_object(name, bm, collection=collection)
 
 
+def annulus_sector_ramp(name, inner_radius, outer_radius, angle_start_deg, angle_end_deg, z_inner, z_outer, bottom_z, segments=16, collection=None):
+    """Solid annular-sector band whose top ramps linearly from `z_inner` at
+    `inner_radius` to `z_outer` at `outer_radius`, over a flat bottom at
+    `bottom_z`. Watertight: top, bottom, inner wall, outer wall, two radial
+    end walls, quads throughout.
+
+    This is the beach ramp's true shape. A rectangular slab would not meet the
+    circular island rim: at the gate's edge angles the arc at r=235 sits ~39
+    studs inside the line x=235, which would leave the ramp hanging off the
+    coastline at both corners.
+    """
+    bm = bmesh.new()
+    a0, a1 = math.radians(angle_start_deg), math.radians(angle_end_deg)
+    in_top, out_top, in_bot, out_bot = [], [], [], []
+    for i in range(segments + 1):
+        t = a0 + (a1 - a0) * i / segments
+        cos_t, sin_t = math.cos(t), math.sin(t)
+        in_top.append(bm.verts.new((inner_radius * cos_t, inner_radius * sin_t, z_inner)))
+        out_top.append(bm.verts.new((outer_radius * cos_t, outer_radius * sin_t, z_outer)))
+        in_bot.append(bm.verts.new((inner_radius * cos_t, inner_radius * sin_t, bottom_z)))
+        out_bot.append(bm.verts.new((outer_radius * cos_t, outer_radius * sin_t, bottom_z)))
+    bm.verts.ensure_lookup_table()
+
+    for i in range(segments):
+        j = i + 1
+        bm.faces.new((in_top[i], in_top[j], out_top[j], out_top[i]))
+        bm.faces.new((in_bot[i], out_bot[i], out_bot[j], in_bot[j]))
+        bm.faces.new((out_top[i], out_top[j], out_bot[j], out_bot[i]))
+        bm.faces.new((in_top[i], in_bot[i], in_bot[j], in_top[j]))
+    bm.faces.new((in_top[0], out_top[0], out_bot[0], in_bot[0]))
+    bm.faces.new((in_top[segments], in_bot[segments], out_bot[segments], out_top[segments]))
+
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.normal_update()
+    return bm_to_object(name, bm, collection=collection)
+
+
+def swept_solid(name, centreline, cross_section, collection=None):
+    """Loft a closed solid along `centreline` (a list of (x, y, z) points) by
+    placing `cross_section` -- a list of (across, up) offsets forming a closed
+    profile, ordered consistently -- at every point, oriented so that `across`
+    follows the local left-hand normal of the path in plan.
+
+    Used for the breakwater arms, whose profile is deliberately asymmetric:
+    a near-vertical blocky landward face and a ramped seaward face, per the
+    harbour-works rule in CLAUDE.md.
+    """
+    import mathutils
+
+    pts = [mathutils.Vector(p) for p in centreline]
+    n = len(pts)
+    bm = bmesh.new()
+    rings = []
+    for i, p in enumerate(pts):
+        nxt = pts[min(i + 1, n - 1)]
+        prv = pts[max(i - 1, 0)]
+        tan = (nxt - prv)
+        tan.z = 0.0
+        if tan.length < 1e-6:
+            tan = mathutils.Vector((1.0, 0.0, 0.0))
+        tan.normalize()
+        nrm = mathutils.Vector((-tan.y, tan.x, 0.0))
+        rings.append([bm.verts.new(p + nrm * across + mathutils.Vector((0.0, 0.0, up)))
+                      for across, up in cross_section])
+    bm.verts.ensure_lookup_table()
+
+    m = len(cross_section)
+    for i in range(n - 1):
+        for k in range(m):
+            k2 = (k + 1) % m
+            bm.faces.new((rings[i][k], rings[i][k2], rings[i + 1][k2], rings[i + 1][k]))
+    caps = [bm.faces.new(rings[0]), bm.faces.new(list(reversed(rings[n - 1])))]
+    bmesh.ops.triangulate(bm, faces=caps, quad_method="BEAUTY", ngon_method="BEAUTY")
+
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.normal_update()
+    return bm_to_object(name, bm, collection=collection)
+
+
 def shade_flat(obj):
     """Faceted shading -- the default for everything except water and rope."""
     for poly in obj.data.polygons:

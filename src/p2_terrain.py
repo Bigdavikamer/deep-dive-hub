@@ -32,12 +32,12 @@ Design notes / scope calls (flagged, not silently assumed):
     WEST_TERRACE_LIFT -- keeps it visually coherent with the flat terrain
     immediately around it in this pass; later phases can grade the ground
     between them.
-  - The tide pool basin is intentionally open at the rim (non-manifold
-    boundary edges) -- it's a pit meant to sit inside the surrounding
-    terrain quadrant mesh, not a sealed standalone solid; sealing it would
-    mean cutting a matching hole in the terrain mesh and welding the two,
-    which is real terrain-boolean work out of this phase's scope. Flagged
-    in validate.py output, not silently ignored.
+  - The tide pool is a closed tub (concave basin, cylindrical skirt, flat
+    underside) sunk into the terrain, rather than the open-rimmed bowl this
+    phase originally built. The open version relied on the surrounding
+    terrain to seal it and left 24 non-manifold boundary edges; a
+    self-contained solid reads identically and satisfies the per-mesh
+    watertight requirement without cutting and welding the terrain.
   - DD_Struct_PlazaFloor (Phase 1's flat annulus placeholder) still fails
     validate.py's manifold and origin-at-base checks -- pre-existing from
     Phase 1 (a zero-thickness placeholder), unrelated to this phase's work,
@@ -217,24 +217,33 @@ def build_tidepool():
     floor_z = config.POOL_DEPTH
     segments = 24
 
-    bm = None
     import bmesh
     bm = bmesh.new()
-    rim = []
-    floor = []
+    # Closed tub, not an open bowl: concave basin on top, a cylindrical outer
+    # skirt, and a flat underside. The original open-rimmed version left 24
+    # boundary edges and was the build's last standing manifold failure -- it
+    # assumed the surrounding terrain would seal it, which needs the terrain
+    # cut and welded to match. A self-contained solid sunk into the terrain
+    # gets the same read and is watertight on its own, which is what Roblox
+    # actually requires of each mesh.
+    bottom_z = floor_z - 1.5
+    rim, floor, skirt = [], [], []
     for i in range(segments):
         t = 2.0 * math.pi * i / segments
-        x, y = cx + r * math.cos(t), cy + r * math.sin(t)
-        rim.append(bm.verts.new((x, y, rim_z)))
-        fx, fy = cx + (r * 0.6) * math.cos(t), cy + (r * 0.6) * math.sin(t)
-        floor.append(bm.verts.new((fx, fy, floor_z)))
+        cos_t, sin_t = math.cos(t), math.sin(t)
+        rim.append(bm.verts.new((cx + r * cos_t, cy + r * sin_t, rim_z)))
+        floor.append(bm.verts.new((cx + r * 0.6 * cos_t, cy + r * 0.6 * sin_t, floor_z)))
+        skirt.append(bm.verts.new((cx + r * cos_t, cy + r * sin_t, bottom_z)))
     floor_center = bm.verts.new((cx, cy, floor_z))
+    bottom_center = bm.verts.new((cx, cy, bottom_z))
     bm.verts.ensure_lookup_table()
 
     for i in range(segments):
         j = (i + 1) % segments
         bm.faces.new((rim[i], rim[j], floor[j], floor[i]))          # sloped basin wall
         bm.faces.new((floor_center, floor[i], floor[j]))            # basin floor fan
+        bm.faces.new((rim[i], skirt[i], skirt[j], rim[j]))          # outer skirt
+        bm.faces.new((bottom_center, skirt[j], skirt[i]))           # underside fan
 
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     bm.normal_update()
