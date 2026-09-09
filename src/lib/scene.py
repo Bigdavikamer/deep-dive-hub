@@ -70,22 +70,34 @@ def link_to_collection(obj, collection_name):
 def set_origin_to_base(obj):
     """Move the object's origin to its bounding-box base centre (min Z,
     centred X/Y) without bpy.ops, so it survives headless/MCP execution.
-    Roblox expects origins at base centre, not volume centre."""
+    Roblox expects origins at base centre, not volume centre.
+
+    Deliberately does NOT read obj.matrix_world: in this MCP/headless
+    context, matrix_world is a cached/evaluated value that does not refresh
+    until a depsgraph update, so reading it immediately after setting
+    obj.location returns the object's PREVIOUS transform -- a real bug
+    found while building Phase 3 (every object silently snapped back to
+    the world origin). Building the transform matrix directly from
+    obj.location/rotation/scale sidesteps the staleness entirely.
+    """
     import mathutils
 
     mesh = obj.data
     if mesh is None or len(mesh.vertices) == 0:
         return
-    coords = [obj.matrix_world @ v.co for v in mesh.vertices]
+    rotation = obj.rotation_quaternion if obj.rotation_mode == "QUATERNION" else obj.rotation_euler
+    mat = mathutils.Matrix.LocRotScale(obj.location, rotation, obj.scale)
+
+    coords = [mat @ v.co for v in mesh.vertices]
     xs = [c.x for c in coords]
     ys = [c.y for c in coords]
     zs = [c.z for c in coords]
     base = mathutils.Vector(((min(xs) + max(xs)) / 2.0, (min(ys) + max(ys)) / 2.0, min(zs)))
-    offset_world = base - obj.matrix_world.translation
-    local_offset = obj.matrix_world.inverted().to_3x3() @ offset_world
+    offset_world = base - obj.location
+    local_offset = mat.to_3x3().inverted() @ offset_world
     for v in mesh.vertices:
         v.co -= local_offset
-    obj.matrix_world.translation = base
+    obj.location = base
     mesh.update()
 
 

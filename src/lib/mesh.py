@@ -194,6 +194,75 @@ def terrain_quadrant(name, angle_start_deg, angle_end_deg, segments, mid_radius,
     return bm_to_object(name, bm, collection=collection)
 
 
+def arch_beam(name, span, rise, thickness, depth, base_z, yaw=0.0, samples=16, collection=None):
+    """A solid stone arch band (half-ellipse profile) spanning `span` studs
+    wide and `rise` studs tall, `thickness` studs thick (radially) and
+    `depth` studs deep. Local X = across the span (-span/2..span/2), local
+    Y = depth, local Z = base_z (springline) up to base_z+rise (apex).
+    `yaw` bakes footprint rotation into local vertex data (see box()) so the
+    same beam can be reused for a wall running along X or along Y while the
+    object keeps identity rotation. Built directly via bmesh (no boolean) --
+    CLAUDE.md flags boolean cuts as the #1 risk for shop-arch geometry.
+    """
+    a_out, b_out = span / 2.0, rise
+    a_in, b_in = max(a_out - thickness, 0.5), max(b_out - thickness, 0.5)
+    cos_y, sin_y = math.cos(yaw), math.sin(yaw)
+
+    def rot(x, y):
+        return (x * cos_y - y * sin_y, x * sin_y + y * cos_y)
+
+    bm = bmesh.new()
+    outer_f, outer_b, inner_f, inner_b = [], [], [], []
+    for i in range(samples + 1):
+        t = math.pi * i / samples
+        cos_t, sin_t = math.cos(t), math.sin(t)
+        z_out, z_in = base_z + b_out * sin_t, base_z + b_in * sin_t
+        ox, oy = rot(a_out * cos_t, -depth / 2.0)
+        outer_f.append(bm.verts.new((ox, oy, z_out)))
+        ox, oy = rot(a_out * cos_t, depth / 2.0)
+        outer_b.append(bm.verts.new((ox, oy, z_out)))
+        ix, iy = rot(a_in * cos_t, -depth / 2.0)
+        inner_f.append(bm.verts.new((ix, iy, z_in)))
+        ix, iy = rot(a_in * cos_t, depth / 2.0)
+        inner_b.append(bm.verts.new((ix, iy, z_in)))
+    bm.verts.ensure_lookup_table()
+
+    for i in range(samples):
+        j = i + 1
+        bm.faces.new((outer_f[i], outer_f[j], outer_b[j], outer_b[i]))   # outer curved face
+        bm.faces.new((inner_b[i], inner_b[j], inner_f[j], inner_f[i]))   # inner curved face
+        bm.faces.new((inner_f[i], inner_f[j], outer_f[j], outer_f[i]))   # front flat face
+        bm.faces.new((outer_b[i], outer_b[j], inner_b[j], inner_b[i]))   # back flat face
+    bm.faces.new((outer_f[0], outer_b[0], inner_b[0], inner_f[0]))       # start end cap
+    bm.faces.new((inner_f[samples], inner_b[samples], outer_b[samples], outer_f[samples]))  # end cap
+
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.normal_update()
+    return bm_to_object(name, bm, collection=collection)
+
+
+def hip_roof(name, footprint_x, footprint_y, eave_z, ridge_z, ridge_len, collection=None):
+    """A simple hip roof: rectangular eave line, a short ridge centred and
+    aligned along X, 4 sloped faces + a flat underside cap. Built directly
+    via from_pydata (no boolean)."""
+    hx, hy = footprint_x / 2.0, footprint_y / 2.0
+    rh = ridge_len / 2.0
+    verts = [
+        (-hx, -hy, eave_z), (hx, -hy, eave_z), (hx, hy, eave_z), (-hx, hy, eave_z),  # 0-3 eave corners
+        (-rh, 0.0, ridge_z), (rh, 0.0, ridge_z),  # 4,5 ridge ends
+    ]
+    faces = [
+        (0, 1, 2, 3),      # underside cap
+        (0, 1, 5, 4),      # south slope (trapezoid)
+        (2, 3, 4, 5),      # north slope (trapezoid)
+        (1, 2, 5),         # east hip (triangle)
+        (3, 0, 4),         # west hip (triangle)
+    ]
+    obj = new_mesh_object(name, verts, faces, collection=collection)
+    recalc_normals_outward(obj)
+    return obj
+
+
 def shade_flat(obj):
     """Faceted shading -- the default for everything except water and rope."""
     for poly in obj.data.polygons:
