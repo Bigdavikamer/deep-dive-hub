@@ -154,6 +154,32 @@ def setup_eye_camera(name, location, facing_deg, fov_deg=70.0):
     return cam_obj
 
 
+def setup_look_at_camera(name, location, target, fov_deg=50.0):
+    """Perspective camera at `location` aimed at the 3D point `target`.
+
+    setup_eye_camera() is deliberately pitch-free (it models a standing
+    player's horizontal gaze), which cannot see into anything recessed below
+    the surrounding ground -- e.g. the plot pads, which sit PLOT_Z below the
+    Z=0 terrain, so a Z=5 horizontal eye is blocked by the plaza rim. This is
+    the oblique/3-4 counterpart for inspection renders."""
+    import math
+
+    import mathutils
+
+    cam_data = bpy.data.cameras.get(name) or bpy.data.cameras.new(name)
+    cam_data.type = "PERSP"
+    cam_data.angle = math.radians(fov_deg)
+    cam_obj = bpy.data.objects.get(name)
+    if cam_obj is None:
+        cam_obj = bpy.data.objects.new(name, cam_data)
+        bpy.context.scene.collection.objects.link(cam_obj)
+    cam_obj.data = cam_data
+    cam_obj.location = location
+    direction = mathutils.Vector(target) - mathutils.Vector(location)
+    cam_obj.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
+    return cam_obj
+
+
 def render_to_file(camera_obj, filepath, resolution=(1600, 900), color_type="MATERIAL", xray=False):
     """Render `camera_obj`'s view to `filepath` using Workbench (fast, no
     lights required). color_type='MATERIAL' reads each object's assigned
