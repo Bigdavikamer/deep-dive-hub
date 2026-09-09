@@ -38,7 +38,8 @@ OWNED_PREFIXES = [
     "DD_Terrain_Beach",
     "DD_Struct_Shop",
     "DD_Struct_Spire",
-    "DD_Plaza_Floor",
+    "DD_Struct_PlazaFloor",
+    "DD_Plaza_Floor",  # legacy name (invalid category, "Plaza" isn't in the naming regex) -- cleans up old runs
     "DD_Plot_Pad_",
     "DD_Dock_North",
     "DD_Dock_South",
@@ -97,6 +98,7 @@ def build_beach_ramp():
     obj = dd_mesh.new_mesh_object("DD_Terrain_Beach", verts, faces)
     dd_mesh.recalc_normals_outward(obj)
     dd_mesh.shade_flat(obj)
+    dd_scene.set_origin_to_base(obj)
     dd_scene.link_to_collection(obj, "Terrain")
     return obj
 
@@ -118,7 +120,10 @@ def build_spire():
 
 
 def build_plaza_floor():
-    obj = dd_mesh.annulus("DD_Plaza_Floor", config.PLAZA_INNER_R, config.PLAZA_OUTER_R, base_z=config.PLAZA_LIFT, segments=64)
+    # Named DD_Struct_* not DD_Plaza_* -- "Plaza" is a collection, not a
+    # valid naming category (see CLAUDE.md NAMING; only Terrain/Struct/Plot/
+    # Dock/Prop/Nature/Marker/UI/Lamp/Overhead/Lore/Sub are).
+    obj = dd_mesh.annulus("DD_Struct_PlazaFloor", config.PLAZA_INNER_R, config.PLAZA_OUTER_R, base_z=config.PLAZA_LIFT, segments=64)
     dd_mesh.shade_flat(obj)
     dd_scene.link_to_collection(obj, "Plaza")
     return obj
@@ -134,6 +139,7 @@ def build_plots():
         obj = dd_mesh.box(name, config.PLOT_SIZE, config.PLOT_SIZE, thickness, base_z=-thickness, yaw=yaw)
         obj.location = (x, y, config.PLOT_Z)
         dd_mesh.shade_flat(obj)
+        dd_scene.set_origin_to_base(obj)
         dd_scene.link_to_collection(obj, "Plots")
         objs.append(obj)
     return objs
@@ -148,6 +154,7 @@ def build_docks():
         obj = dd_mesh.box(name, config.DOCK_LENGTH, DOCK_WIDTH, 1.0, base_z=-1.0)
         obj.location = (center_x, sign * config.DOCK_OFFSET_Y, 0.0)
         dd_mesh.shade_flat(obj)
+        dd_scene.set_origin_to_base(obj)
         dd_scene.link_to_collection(obj, "Docks")
         objs.append(obj)
     return objs

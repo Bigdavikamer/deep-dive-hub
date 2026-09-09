@@ -142,6 +142,58 @@ def wedge_solid(name, radius, angle_start_deg, angle_end_deg, thickness, segment
     return bm_to_object(name, bm, collection=collection)
 
 
+def terrain_quadrant(name, angle_start_deg, angle_end_deg, segments, mid_radius, outer_radius_fn, outer_z_fn, thickness, base_z=0.0, collection=None):
+    """One quadrant of undulating terrain: a flat disc from the centre out
+    to `mid_radius`, then a variable-radius / variable-height band from
+    `mid_radius` out to `outer_radius_fn(angle)` at height `base_z +
+    outer_z_fn(angle)`. Fully solid/watertight (top, bottom, rim wall, two
+    radial end walls), built directly with bmesh -- this is how the island's
+    coastline gets per-angle noise/terracing without a boolean.
+
+    `outer_radius_fn`/`outer_z_fn` take an angle in degrees and must return
+    the exact same value for a shared boundary angle between two adjacent
+    quadrant calls, or the quadrants won't line up seamlessly.
+    """
+    bm = bmesh.new()
+    mid_top, mid_bot, outer_top, outer_bot = [], [], [], []
+    for i in range(segments + 1):
+        t_deg = angle_start_deg + (angle_end_deg - angle_start_deg) * i / segments
+        t = math.radians(t_deg)
+        cos_t, sin_t = math.cos(t), math.sin(t)
+
+        mx, my = mid_radius * cos_t, mid_radius * sin_t
+        mid_top.append(bm.verts.new((mx, my, base_z)))
+        mid_bot.append(bm.verts.new((mx, my, base_z - thickness)))
+
+        r_out = outer_radius_fn(t_deg)
+        z_out = base_z + outer_z_fn(t_deg)
+        ox, oy = r_out * cos_t, r_out * sin_t
+        outer_top.append(bm.verts.new((ox, oy, z_out)))
+        outer_bot.append(bm.verts.new((ox, oy, base_z - thickness)))
+
+    center_top = bm.verts.new((0.0, 0.0, base_z))
+    center_bot = bm.verts.new((0.0, 0.0, base_z - thickness))
+    bm.verts.ensure_lookup_table()
+
+    for i in range(segments):
+        bm.faces.new((center_top, mid_top[i], mid_top[i + 1]))
+        bm.faces.new((center_bot, mid_bot[i + 1], mid_bot[i]))
+        bm.faces.new((mid_top[i], mid_top[i + 1], outer_top[i + 1], outer_top[i]))
+        bm.faces.new((mid_bot[i], outer_bot[i], outer_bot[i + 1], mid_bot[i + 1]))
+        bm.faces.new((outer_top[i], outer_top[i + 1], outer_bot[i + 1], outer_bot[i]))
+
+    # two radial end walls (quadrant boundary edges)
+    for idx in (0, segments):
+        bm.faces.new((center_top, mid_top[idx], mid_bot[idx], center_bot) if idx == 0
+                      else (center_top, center_bot, mid_bot[idx], mid_top[idx]))
+        bm.faces.new((mid_top[idx], outer_top[idx], outer_bot[idx], mid_bot[idx]) if idx == 0
+                      else (mid_top[idx], mid_bot[idx], outer_bot[idx], outer_top[idx]))
+
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.normal_update()
+    return bm_to_object(name, bm, collection=collection)
+
+
 def shade_flat(obj):
     """Faceted shading -- the default for everything except water and rope."""
     for poly in obj.data.polygons:
