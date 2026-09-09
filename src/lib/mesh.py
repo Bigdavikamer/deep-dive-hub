@@ -263,6 +263,107 @@ def hip_roof(name, footprint_x, footprint_y, eave_z, ridge_z, ridge_len, collect
     return obj
 
 
+def bowed_path(name, p0, p1, width, bow_offset, thickness, base_z=0.0, samples=12, collection=None):
+    """A curved, raised path ribbon from p0 to p1 (each an (x,y) tuple),
+    bowed sideways by bow_offset studs at its midpoint (quadratic Bezier),
+    `width` studs wide, solid with `thickness` studs below `base_z`.
+    Implements CLAUDE.md reference rule 3 (organic paths, not radial
+    spokes) -- no path is a straight radial spoke; cross-sections stay
+    perpendicular to the local curve tangent so the ribbon keeps a
+    constant width along its length."""
+    import mathutils
+
+    p0v = mathutils.Vector(p0)
+    p1v = mathutils.Vector(p1)
+    mid = (p0v + p1v) / 2.0
+    direction = p1v - p0v
+    length = direction.length
+    d = direction / length if length > 1e-6 else mathutils.Vector((1.0, 0.0))
+    perp = mathutils.Vector((-d.y, d.x))
+    control = mid + perp * bow_offset
+
+    def bezier(t):
+        return (1 - t) ** 2 * p0v + 2 * (1 - t) * t * control + t ** 2 * p1v
+
+    def bezier_tangent(t):
+        tan = 2 * (1 - t) * (control - p0v) + 2 * t * (p1v - control)
+        return tan if tan.length > 1e-6 else direction
+
+    bm = bmesh.new()
+    left_top, right_top, left_bot, right_bot = [], [], [], []
+    for i in range(samples + 1):
+        t = i / samples
+        pt = bezier(t)
+        tan = bezier_tangent(t).normalized()
+        nrm = mathutils.Vector((-tan.y, tan.x))
+        lx, ly = pt + nrm * (width / 2.0)
+        rx, ry = pt - nrm * (width / 2.0)
+        left_top.append(bm.verts.new((lx, ly, base_z)))
+        right_top.append(bm.verts.new((rx, ry, base_z)))
+        left_bot.append(bm.verts.new((lx, ly, base_z - thickness)))
+        right_bot.append(bm.verts.new((rx, ry, base_z - thickness)))
+    bm.verts.ensure_lookup_table()
+
+    for i in range(samples):
+        j = i + 1
+        bm.faces.new((left_top[i], right_top[i], right_top[j], left_top[j]))
+        bm.faces.new((left_bot[i], left_bot[j], right_bot[j], right_bot[i]))
+        bm.faces.new((left_top[i], left_top[j], left_bot[j], left_bot[i]))
+        bm.faces.new((right_top[i], right_bot[i], right_bot[j], right_top[j]))
+    bm.faces.new((left_top[0], left_bot[0], right_bot[0], right_top[0]))
+    bm.faces.new((left_top[samples], right_top[samples], right_bot[samples], left_bot[samples]))
+
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.normal_update()
+    return bm_to_object(name, bm, collection=collection)
+
+
+def set_quad_face_uv(obj, face_index=0):
+    """Give one face (must be a quad) a clean 0-1 planar UV, non-overlapping
+    with anything else on the mesh. For GUI-surface objects (stelae, chalk
+    boards, notice boards) that will carry a Studio SurfaceGui -- CLAUDE.md
+    requires "a single planar quad with non-overlapping UVs", never modelled
+    text."""
+    mesh = obj.data
+    uv_layer = mesh.uv_layers.get("UVMap") or mesh.uv_layers.new(name="UVMap")
+    poly = mesh.polygons[face_index]
+    if len(poly.vertices) != 4:
+        raise ValueError(f"{obj.name} face {face_index} is not a quad")
+    corners = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+    for corner, loop_index in zip(corners, poly.loop_indices):
+        uv_layer.data[loop_index].uv = corner
+
+
+def annulus_sector_solid(name, inner_radius, outer_radius, angle_start_deg, angle_end_deg, thickness, segments=8, base_z=0.0, collection=None):
+    """A solid annulus SECTOR (unlike wedge_solid, does not extend to the
+    centre) -- e.g. one step of a ring, spanning a limited angle. Fully
+    watertight: top, bottom, inner wall, outer wall, two radial end walls."""
+    bm = bmesh.new()
+    a0, a1 = math.radians(angle_start_deg), math.radians(angle_end_deg)
+    inner_top, outer_top, inner_bot, outer_bot = [], [], [], []
+    for i in range(segments + 1):
+        t = a0 + (a1 - a0) * i / segments
+        cos_t, sin_t = math.cos(t), math.sin(t)
+        inner_top.append(bm.verts.new((inner_radius * cos_t, inner_radius * sin_t, base_z)))
+        outer_top.append(bm.verts.new((outer_radius * cos_t, outer_radius * sin_t, base_z)))
+        inner_bot.append(bm.verts.new((inner_radius * cos_t, inner_radius * sin_t, base_z - thickness)))
+        outer_bot.append(bm.verts.new((outer_radius * cos_t, outer_radius * sin_t, base_z - thickness)))
+    bm.verts.ensure_lookup_table()
+
+    for i in range(segments):
+        j = i + 1
+        bm.faces.new((inner_top[i], inner_top[j], outer_top[j], outer_top[i]))
+        bm.faces.new((inner_bot[i], outer_bot[i], outer_bot[j], inner_bot[j]))
+        bm.faces.new((outer_top[i], outer_top[j], outer_bot[j], outer_bot[i]))
+        bm.faces.new((inner_top[i], inner_bot[i], inner_bot[j], inner_top[j]))
+    bm.faces.new((inner_top[0], outer_top[0], outer_bot[0], inner_bot[0]))
+    bm.faces.new((inner_top[segments], inner_bot[segments], outer_bot[segments], outer_top[segments]))
+
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.normal_update()
+    return bm_to_object(name, bm, collection=collection)
+
+
 def shade_flat(obj):
     """Faceted shading -- the default for everything except water and rope."""
     for poly in obj.data.polygons:
