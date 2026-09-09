@@ -82,32 +82,32 @@ TRI_BUDGET = {
 
 # ---- palette (sRGB hex; convert to linear before assigning) ----------------
 PALETTE = {
-    "water_deep":    "#0B2A3D",
-    "water_mid":     "#1E5A73",
-    "water_shallow": "#57C7D4",
-    "foam":          "#E8F4F2",
-    "sand_wet":      "#C9B183",
-    "sand_dry":      "#E3D2A8",
-    "stone_light":   "#8E9AA3",
-    "stone_dark":    "#5A6670",
-    "timber_warm":   "#7A4E2E",
-    "timber_dark":   "#4A2E1C",
-    "roof_slate":    "#3E4C59",
-    "roof_patina":   "#4FA396",
-    "rope_canvas":   "#D8C8A6",
-    "sea_grass":     "#4E7D52",
-    "lantern_gold":  "#F2C46B",
-    "biolume_cyan":  "#66E2D5",   # INTERACTABLES ONLY
+    "water_deep":    "#081E2C",
+    "water_mid":     "#1A4F63",
+    "water_shallow": "#4FB8C4",
+    "foam":          "#DCEEEC",
+    "sand_wet":      "#B7A788",
+    "sand_dry":      "#D8CBA0",
+    "stone_light":   "#7C8D9B",
+    "stone_dark":    "#47535D",
+    "timber_warm":   "#6B4A30",
+    "timber_dark":   "#3A2A22",
+    "roof_slate":    "#33414D",
+    "roof_patina":   "#3F8F8A",
+    "rope_canvas":   "#C9BFA0",
+    "sea_grass":     "#3E6B5C",
+    "lantern_gold":  "#E8B85C",
+    "biolume_cyan":  "#5FDCD0",   # INTERACTABLES ONLY
     # --- dressing extensions ---
-    "specimen_glow": "#A8E6C8",   # lore props only; must NOT read as cyan
-    "tar_pitch":     "#2B2721",
-    "iron_dark":     "#3B3F42",
-    "brass_worn":    "#9C7A3C",
-    "cloth_red":     "#A34B3C",   # awnings, banners, pennants
-    "cloth_blue":    "#3D6B8C",
-    "salt_pale":     "#DCD8CC",
-    "moss_damp":     "#3F5F42",
-    "barnacle":      "#B8B0A0",
+    "specimen_glow": "#93D9B8",   # lore props only; must NOT read as cyan
+    "tar_pitch":     "#211E1D",
+    "iron_dark":     "#33383C",
+    "brass_worn":    "#8F7238",
+    "cloth_red":     "#8F4034",   # awnings, banners, pennants
+    "cloth_blue":    "#345E78",
+    "salt_pale":     "#D2D6D2",
+    "moss_damp":     "#335048",
+    "barnacle":      "#A8AEA8",
 }
 
 INTERACTABLE_COLOR = "biolume_cyan"
