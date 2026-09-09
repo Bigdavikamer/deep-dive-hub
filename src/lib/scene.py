@@ -20,6 +20,13 @@ NAME_RE = re.compile(
     r"(\.[A-Za-z0-9]+\.\d+)?$"
 )
 
+# Matches the ".District.Index" suffix that marks a placed/scattered instance,
+# e.g. "DD_Prop_Barrel_A.MarketW.017". Unsuffixed names are source kit
+# meshes (structural/terrain builds, and the Phase 7a prop-kit grid at
+# (1000,0,0)) and must carry identity scale/rotation; suffixed names are
+# scatter placements and are exempt -- see CLAUDE.md "HARD CONSTRAINTS".
+PLACED_INSTANCE_RE = re.compile(r"\.[A-Za-z0-9]+\.\d+$")
+
 
 def ensure_collections():
     """Create all top-level collections if missing and link them under the
@@ -84,3 +91,10 @@ def set_origin_to_base(obj):
 
 def is_valid_name(name):
     return bool(NAME_RE.match(name))
+
+
+def is_placed_instance(name):
+    """True for a scattered/placed instance (name ends '.District.Index'),
+    false for a source kit mesh (structural build or unplaced prop-kit
+    object)."""
+    return bool(PLACED_INSTANCE_RE.search(name))

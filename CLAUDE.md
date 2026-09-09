@@ -284,8 +284,8 @@ Non-negotiable. `validate.py` must check every one of these.
 | Watertight | No holes, no exposed backfaces, no non-manifold edges. |
 | Topology | Quads wherever possible. **Zero n-gons.** |
 | Volume | No zero-thickness geometry. Every mesh has thickness. |
-| Transforms | Scale applied to `(1,1,1)`, rotation applied to `(0,0,0)` on every exported object. |
-| Origins | At the object's **base centre**, not its volume centre. |
+| Transforms | Scale applied to `(1,1,1)`, rotation applied to `(0,0,0)` on every **source kit mesh** (structural builds and the Phase 7a prop-kit grid at (1000,0,0)). **Placed/scattered instances are exempt** — they legitimately carry the scatter algorithm's rotation and uniform ±`SCATTER_SCALE_JITTER` scale; that's how one linked mesh becomes 30 differently-oriented barrels. Resolves the tension with linked-mesh-data reuse (constraint below and check 17): baking rotation/scale into vertex data per instance would force unique mesh data per instance and break instancing. |
+| Origins | At the object's **base centre**, not its volume centre — a property of the mesh's local vertex data (local min Z ≈ 0), independent of the object's world transform. Placed instances inherit this for free since they share the source mesh's data. |
 | Size | Nothing exceeds 2048 studs on any axis. |
 | Scale | Model at **1 Blender unit = 1 stud**. |
 
@@ -794,8 +794,8 @@ Exit nonzero and print a per-object report on any failure.
 | 3 | Zero non-manifold edges (`bmesh` select_non_manifold) |
 | 4 | Zero n-gons (no polygon with > 4 verts) |
 | 5 | Zero loose verts / loose edges / interior faces |
-| 6 | All object scales `(1,1,1)`, all rotations `(0,0,0)` |
-| 7 | Every object origin at its base centre (origin Z == bbox min Z, ±0.01) |
+| 6 | Source kit meshes (unplaced structural/terrain builds and the Phase 7a kit grid): scale `(1,1,1)`, rotation `(0,0,0)`. Placed/scattered instances (name ends `.District.Index`): scale must be uniform and within ±`SCATTER_SCALE_JITTER` of 1; rotation is unconstrained (that's the scatter jitter) |
+| 7 | Every object's mesh data has its base at local Z ≈ 0 (±0.01) — checked in local space, so it holds for placed instances regardless of world rotation |
 | 8 | No object dimension > 2048 |
 | 9 | Every object name matches the naming regex |
 | 10 | Every object assigned to exactly one collection |

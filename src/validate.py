@@ -3,15 +3,17 @@ connected Blender session (or headless via `blender --background --python
 src/validate.py`) after any build phase. Exits nonzero and prints a
 per-object report on any failure.
 
-NOTE on checks 6/7 vs 17: the brief requires every exported object to carry
-identity scale/rotation (baked into vertex data) AND requires scattered prop
-instances to share linked mesh data (so rotated/scaled duplicates read as one
-MeshId). Those two rules are in tension for any two instances that don't
-share the exact same yaw+scale jitter. This validator enforces both as
-literally specified; resolving the tension (e.g. by exempting placed
-instances from the identity-transform rule, since translation/rotation is
-how Roblox parts are placed anyway) is a design call for Phase 7b, flagged
-to the user rather than guessed here.
+Resolution of the identity-transform vs. linked-mesh-data tension (checks 6/7
+vs. 17): identity scale/rotation is required only on SOURCE KIT MESHES --
+structural/terrain builds and the unplaced Phase 7a prop-kit grid at
+(1000,0,0). PLACED/SCATTERED INSTANCES (name ends ".District.Index", see
+lib.scene.is_placed_instance) are exempt from identity rotation and instead
+must carry uniform scale within +/-SCATTER_SCALE_JITTER of 1 -- that's how
+one linked mesh becomes thirty differently-oriented barrels without forking
+the mesh data per instance. Check 7 (origin at base centre) is evaluated in
+LOCAL mesh-vertex space, so it holds for every instance regardless of world
+rotation: placed instances share the source mesh's data, so they inherit a
+correct origin for free.
 """
 import json
 import math
@@ -127,11 +129,28 @@ def check_loose_geometry(objs):
 
 
 def check_transforms(objs):
+    """Identity scale/rotation is required only on source kit meshes
+    (structural/terrain builds and the unplaced Phase 7a prop-kit grid).
+    Placed/scattered instances (lib.scene.is_placed_instance) legitimately
+    carry the scatter algorithm's rotation and +/-SCATTER_SCALE_JITTER
+    uniform scale -- see CLAUDE.md HARD CONSTRAINTS > Transforms."""
     fails = []
+    lo = 1.0 - config.SCATTER_SCALE_JITTER
+    hi = 1.0 + config.SCATTER_SCALE_JITTER
     for o in objs:
         sx, sy, sz = o.scale
+        if dd_scene.is_placed_instance(o.name):
+            if not (abs(sx - sy) < TOLERANCE and abs(sy - sz) < TOLERANCE):
+                fails.append(f"{o.name}: placed-instance scale must be uniform, got {tuple(o.scale)}")
+            elif not (lo - TOLERANCE <= sx <= hi + TOLERANCE):
+                fails.append(
+                    f"{o.name}: placed-instance scale {sx:.3f} outside "
+                    f"+/-{config.SCATTER_SCALE_JITTER} jitter band ({lo:.3f}-{hi:.3f})"
+                )
+            continue  # rotation is unconstrained for placed instances
+
         if any(abs(s - 1.0) > TOLERANCE for s in (sx, sy, sz)):
-            fails.append(f"{o.name}: scale {tuple(o.scale)} != (1,1,1)")
+            fails.append(f"{o.name}: scale {tuple(o.scale)} != (1,1,1) (source kit mesh must be unscaled)")
         if o.rotation_mode == "QUATERNION":
             rot_ok = (
                 abs(o.rotation_quaternion[0] - 1.0) < TOLERANCE
@@ -140,20 +159,23 @@ def check_transforms(objs):
         else:
             rot_ok = all(abs(r) < TOLERANCE for r in o.rotation_euler)
         if not rot_ok:
-            fails.append(f"{o.name}: rotation not identity")
+            fails.append(f"{o.name}: rotation not identity (source kit mesh must be unrotated)")
     return fails
 
 
 def check_origin_base(objs):
+    """Origin-at-base-centre is a property of the mesh's LOCAL vertex data
+    (local min Z ~= 0), independent of the object's world transform. Checked
+    in local space so it holds for placed instances too -- they share the
+    source mesh's data, so a correctly-authored kit mesh gives every instance
+    a correct origin for free, regardless of that instance's world rotation."""
     fails = []
     for o in objs:
         if o.type != "MESH" or not o.data.vertices:
             continue
-        zs = [(o.matrix_world @ v.co).z for v in o.data.vertices]
-        min_z = min(zs)
-        origin_z = o.matrix_world.translation.z
-        if abs(origin_z - min_z) > TOLERANCE:
-            fails.append(f"{o.name}: origin Z {origin_z:.3f} != bbox min Z {min_z:.3f}")
+        min_local_z = min(v.co.z for v in o.data.vertices)
+        if abs(min_local_z) > TOLERANCE:
+            fails.append(f"{o.name}: mesh base at local Z {min_local_z:.3f}, expected ~0")
     return fails
 
 
@@ -340,8 +362,8 @@ ALL_CHECKS = [
     (3, "Manifold edges", check_manifold),
     (4, "Zero n-gons", check_ngons),
     (5, "Loose verts/edges", check_loose_geometry),
-    (6, "Identity scale/rotation", check_transforms),
-    (7, "Origin at base centre", check_origin_base),
+    (6, "Identity transform (kit meshes) / jitter-bounded scale (placed)", check_transforms),
+    (7, "Mesh base at local Z=0 (origin at base centre)", check_origin_base),
     (8, "Max dimension <=2048", check_max_dimension),
     (9, "Naming regex", check_naming),
     (10, "Exactly one collection", check_single_collection),
