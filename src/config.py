@@ -162,8 +162,16 @@ WEST_TERRACE_LIFT  = 8.0
 TERRACE_STEP_COUNT = 3
 
 # ---- tide pool (second water body, west rim) -------------------------------
-POOL_XY            = (-196.0, 44.0)
-POOL_RADIUS        = 28.0
+# Moved off the brief's (-196, 44) r=28: that overlapped plot 4's pad by a
+# 33x17 stud bite AND put the pool's far edge 2 studs past the coastline. The
+# plot ring leaves only ~53-stud angular gaps between 70-stud pads, so a
+# 56-diameter pool fits nowhere in it; pushed out to r=188 in the gap between
+# plots 3 and 4 (angle 159.2, the smallest move off the original 167.3
+# bearing) a 26-radius pool clears plot 3 and the shore by ~7 studs each.
+# p2_terrain derives the coastline notch angle from POOL_XY, so the notch
+# follows this on its own.
+POOL_XY            = (-176.0, 67.0)
+POOL_RADIUS        = 26.0
 POOL_DEPTH         = -5.0
 
 # ---- NPC anchors -----------------------------------------------------------
