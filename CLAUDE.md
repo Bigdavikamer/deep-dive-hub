@@ -379,6 +379,24 @@ Vary kerb stonework and sign carving per plot — no two identical.
 - **Break repetition.** Seeded ±15° rotation and ±8% scale on every scatter prop. Two identical barrels in the same orientation is a defect.
 - **Vary height.** Terraces, steps, the raised dais, roof-line variation. A flat hub reads as dead.
 
+## MOOD DIRECTIVE — abyss and restraint
+
+The default direction was a warm, sunlit fishing village. That's wrong for
+Deep Dive: the hub sits above a game about descending into the unknown, and
+it should feel like it knows that. Three levers, on top of the cool palette:
+
+1. Light is scarce, not absent. Only five sites stay lit (see
+   LIT_LANTERN_SITES in config.py): the spire beacon, the two breakwater
+   caps framing the gate, the dock head, and the inn marking spawn. Every
+   other lantern in the kit is modelled with dark, unlit glass.
+2. Warm color is rationed. WARM_ACCENT_MAX_PER_DISTRICT caps cloth_red and
+   lantern_gold at 2 instances per plaza quarter. Everything else defaults
+   to cloth_blue or unpainted stone/timber.
+3. Depth gets darker, deliberately, independent of Studio's lighting. Bake
+   a vertex-colour multiply into water meshes and recessed/shadowed
+   geometry (cellar ledge, under the arcade, tide pool floor, ocean floor
+   past the shelf lip) that darkens with depth, per DEPTH_DARKEN_STRENGTH.
+
 ### Explicitly out of scope — do not build
 - Ocean water surface (Roblox Terrain water, Studio side)
 - Sky, lighting, atmosphere, fog

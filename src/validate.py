@@ -133,11 +133,21 @@ def check_transforms(objs):
     (structural/terrain builds and the unplaced Phase 7a prop-kit grid).
     Placed/scattered instances (lib.scene.is_placed_instance) legitimately
     carry the scatter algorithm's rotation and +/-SCATTER_SCALE_JITTER
-    uniform scale -- see CLAUDE.md HARD CONSTRAINTS > Transforms."""
+    uniform scale -- see CLAUDE.md HARD CONSTRAINTS > Transforms.
+
+    Non-mesh objects are exempt. The rule exists because rotation/scale baked
+    into an object transform rather than vertex data survives FBX export
+    badly, which cannot apply to an Empty: Empties do not export at all, which
+    is precisely why out/npc_anchors.json is the real deliverable. The NPC
+    anchors are REQUIRED to carry a Z-rotation -- CLAUDE.md: "Place a named
+    Empty at every NPC position. Set Z-rotation to the facing direction."
+    """
     fails = []
     lo = 1.0 - config.SCATTER_SCALE_JITTER
     hi = 1.0 + config.SCATTER_SCALE_JITTER
     for o in objs:
+        if o.type != "MESH":
+            continue
         sx, sy, sz = o.scale
         if dd_scene.is_placed_instance(o.name):
             if not (abs(sx - sy) < TOLERANCE and abs(sy - sz) < TOLERANCE):

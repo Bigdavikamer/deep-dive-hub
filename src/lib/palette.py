@@ -90,14 +90,41 @@ def debug_color_for(obj_name):
     return "#FFFFFF"
 
 
+GLASS_DARK_HEX = "#1A1E20"   # unlit lantern glass, preview only
+GLASS_LIT_HEX = "#E8B85C"    # = PALETTE lantern_gold
+WARM_ACCENT_HEX = "#8F4034"  # = PALETTE cloth_red, the rationed warm accent
+
+
 def apply_debug_colors(objs):
     """Assign a category-coded flat colour to each object for greybox/gate
     renders. Relying on Workbench's random per-object colouring turned out
     to be unreliable across Blender versions; explicit materials always
-    render distinctly and cost nothing (Phase 8 overwrites them)."""
+    render distinctly and cost nothing (Phase 8 overwrites them).
+
+    Fills existing slots in place rather than clearing them: lantern meshes
+    carry their glass faces in a second material slot (see lib.mood), and
+    clearing would drop that slot and silently strip the mood pass's only
+    record of which surfaces are glass. Slot 1 previews dark or gold so the
+    scarce-light rule is visible in verification renders instead of only
+    landing in Phase 8.
+    """
+    from lib import mood
+
     for o in objs:
         if o.type != "MESH":
             continue
         hex_color = debug_color_for(o.name)
-        mat = get_material(f"DDPreview_{hex_color.lstrip('#')}", hex_color)
-        assign_material(o, mat)
+        base = get_material(f"DDPreview_{hex_color.lstrip('#')}", hex_color)
+        if not o.data.materials:
+            o.data.materials.append(base)
+            continue
+        for i in range(len(o.data.materials)):
+            if i == mood.GLASS_SLOT:
+                glass_hex = GLASS_LIT_HEX if mood.is_lit(o.name) else GLASS_DARK_HEX
+                o.data.materials[i] = get_material(
+                    f"DDPreview_{glass_hex.lstrip('#')}", glass_hex)
+            elif i == mood.WARM_SLOT:
+                o.data.materials[i] = get_material(
+                    f"DDPreview_{WARM_ACCENT_HEX.lstrip('#')}", WARM_ACCENT_HEX)
+            else:
+                o.data.materials[i] = base

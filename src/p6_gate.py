@@ -59,6 +59,7 @@ import mathutils
 
 import config
 from lib import mesh as dd_mesh
+from lib import mood as dd_mood
 from lib import palette as dd_palette
 from lib import scene as dd_scene
 
@@ -85,6 +86,9 @@ BREAKWATER_LANDWARD_W = 8.0
 BREAKWATER_SEAWARD_TOP_W = 5.0
 BREAKWATER_SEAWARD_BASE_W = 14.0
 COPING_COUNT = 7
+CAP_POST_H = 6.0
+CAP_GLASS_H = 2.8
+CAP_ROOF_H = 1.2
 
 DOCK_WIDTH = 10.0
 DOCK_DECK_Z = config.BEACH_DROP
@@ -280,13 +284,21 @@ def build_breakwaters():
                      (length, BREAKWATER_LANDWARD_W + BREAKWATER_SEAWARD_TOP_W - 1.0, 1.4), yaw=yaw)
         objs.append(_emit(f"DD_Struct_BreakwaterCoping{suffix}", bm, "Structures"))
 
-        # lantern cap at the arm head
+        # Lantern cap at the arm head -- two of the five sites that stay lit.
+        # Built from a running height so the glass band is derived, not a
+        # magic pair: lib.mood.mark_glass needs its exact local Z extent to
+        # put those faces in the glass material slot.
         head = mathutils.Vector(centreline[-1])
         bm = bmesh.new()
-        _add_box(bm, (head.x, head.y, BREAKWATER_TOP_Z + 3.0), (3.0, 3.0, 6.0))
-        _add_box(bm, (head.x, head.y, BREAKWATER_TOP_Z + 7.4), (4.2, 4.2, 2.8))
-        _add_box(bm, (head.x, head.y, BREAKWATER_TOP_Z + 9.4), (5.0, 5.0, 1.2))
-        objs.append(_emit(f"DD_Lamp_Breakwater{suffix}", bm, "Structures"))
+        z = BREAKWATER_TOP_Z
+        _add_box(bm, (head.x, head.y, z + CAP_POST_H / 2.0), (3.0, 3.0, CAP_POST_H))
+        z += CAP_POST_H
+        _add_box(bm, (head.x, head.y, z + CAP_GLASS_H / 2.0), (4.2, 4.2, CAP_GLASS_H))
+        z += CAP_GLASS_H
+        _add_box(bm, (head.x, head.y, z + CAP_ROOF_H / 2.0), (5.0, 5.0, CAP_ROOF_H))
+        lamp = _emit(f"DD_Lamp_Breakwater{suffix}", bm, "Structures")
+        dd_mood.mark_glass(lamp, CAP_POST_H - 0.01, CAP_POST_H + CAP_GLASS_H + 0.01)
+        objs.append(lamp)
     return objs
 
 
@@ -492,6 +504,22 @@ def build_wreck():
     return [hull, mast]
 
 
+def apply_mood():
+    """Mood lever 3 for this phase's geometry: the water and the recessed
+    places get darker with depth on their own, so the gate reads as an edge
+    you descend over even with scene lighting off."""
+    s = config.DEPTH_DARKEN_STRENGTH
+    shelf = bpy.data.objects.get("DD_Terrain_ShelfLip")
+    if shelf:
+        dd_mood.apply_depth_darken(shelf, s, config.BEACH_DROP, config.OCEAN_FLOOR_NEAR)
+    shallow = bpy.data.objects.get("DD_Terrain_BeachShallow")
+    if shallow:
+        dd_mood.apply_depth_darken(shallow, s * 0.5, WATERLINE_Z, config.BEACH_DROP)
+    ledge = bpy.data.objects.get("DD_Struct_CellarLedge")
+    if ledge:
+        dd_mood.apply_flat_darken(ledge, 1.0 - s)
+
+
 def build():
     dd_scene.ensure_collections()
     purge()
@@ -506,6 +534,7 @@ def build():
     build_kiosk()
     build_buoys()
     build_wreck()
+    apply_mood()
 
 
 def capture_renders():

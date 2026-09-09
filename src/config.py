@@ -189,6 +189,14 @@ NPC_ANCHORS = [
     ("LampTender",    "wander"),             # roams between 5 candidate anchors
 ]
 
+# ---- mood: abyss and restraint ---------------------------------------------
+LIT_LANTERN_SITES = [
+    "spire_beacon", "breakwater_north_cap", "breakwater_south_cap",
+    "dock_north_head", "innkeeper_frontage",
+]
+WARM_ACCENT_MAX_PER_DISTRICT = 2
+DEPTH_DARKEN_STRENGTH = 0.35
+
 # ---- style -----------------------------------------------------------------
 BEVEL_WIDTH       = 0.6      # studs; applied to all hard structural edges
 BEVEL_SEGMENTS    = 1

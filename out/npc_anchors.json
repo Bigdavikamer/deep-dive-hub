@@ -1,0 +1,82 @@
+[
+  {
+    "name": "Tidewright",
+    "site": "row_bay_1",
+    "x": 115.441,
+    "y": 1.5,
+    "z": -24.443,
+    "facing_deg": 191.95
+  },
+  {
+    "name": "Fishmonger",
+    "site": "row_bay_2",
+    "x": 110.418,
+    "y": 1.5,
+    "z": -41.617,
+    "facing_deg": 200.65
+  },
+  {
+    "name": "Assayer",
+    "site": "row_bay_3",
+    "x": 102.855,
+    "y": 1.5,
+    "z": -57.834,
+    "facing_deg": 209.35
+  },
+  {
+    "name": "Traveller",
+    "site": "row_bay_4",
+    "x": 92.928,
+    "y": 1.5,
+    "z": -72.721,
+    "facing_deg": 218.05
+  },
+  {
+    "name": "Curator",
+    "site": "shop_interior_north",
+    "x": 0.0,
+    "y": 0.0,
+    "z": -22.0,
+    "facing_deg": 270.0
+  },
+  {
+    "name": "Harbourmaster",
+    "site": "shop_interior_east",
+    "x": 22.0,
+    "y": 0.0,
+    "z": -0.0,
+    "facing_deg": 180.0
+  },
+  {
+    "name": "Innkeeper",
+    "site": "plaza_west_inn",
+    "x": -98.026,
+    "y": 1.5,
+    "z": -37.629,
+    "facing_deg": 339.0
+  },
+  {
+    "name": "Shipwright",
+    "site": "kiosk",
+    "x": 201.0,
+    "y": 0.0,
+    "z": 38.0,
+    "facing_deg": 169.5
+  },
+  {
+    "name": "Deckhand",
+    "site": "dock_north_head",
+    "x": 311.0,
+    "y": -6.0,
+    "z": -45.0,
+    "facing_deg": 180.0
+  },
+  {
+    "name": "LampTender",
+    "site": "wander",
+    "x": -150.0,
+    "y": 0.0,
+    "z": -95.0,
+    "facing_deg": 0.0
+  }
+]

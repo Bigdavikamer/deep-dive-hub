@@ -1,0 +1,37 @@
+[
+  {
+    "site": "rim_path",
+    "x": -150.0,
+    "y": 0.0,
+    "z": -95.0,
+    "facing_deg": 0.0
+  },
+  {
+    "site": "tide_pool",
+    "x": -146.0,
+    "y": 0.0,
+    "z": -67.0,
+    "facing_deg": 180.0
+  },
+  {
+    "site": "breakwater_head",
+    "x": 272.0,
+    "y": 5.0,
+    "z": -103.0,
+    "facing_deg": 200.0
+  },
+  {
+    "site": "behind_shop",
+    "x": -44.0,
+    "y": 1.5,
+    "z": 18.0,
+    "facing_deg": 0.0
+  },
+  {
+    "site": "fossil_arch",
+    "x": 232.0,
+    "y": 0.0,
+    "z": -0.0,
+    "facing_deg": 180.0
+  }
+]

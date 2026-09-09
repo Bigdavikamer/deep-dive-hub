@@ -281,12 +281,28 @@ def build_ocean_floor():
     return obj
 
 
+def apply_mood():
+    """Mood lever 3: depth darkens on its own, baked per-vertex so it holds
+    independently of Studio's lighting. The two water bodies this phase owns
+    are the tide pool basin and the ocean floor past the shelf."""
+    from lib import mood as dd_mood
+
+    s = config.DEPTH_DARKEN_STRENGTH
+    pool = bpy.data.objects.get("DD_Terrain_TidePool")
+    if pool:
+        dd_mood.apply_depth_darken(pool, s, TIDEPOOL_RIM_Z, config.POOL_DEPTH)
+    floor = bpy.data.objects.get("DD_Terrain_OceanFloor")
+    if floor:
+        dd_mood.apply_depth_darken(floor, s, config.OCEAN_FLOOR_NEAR, config.OCEAN_FLOOR_FAR)
+
+
 def build():
     dd_scene.ensure_collections()
     purge()
     build_quadrants()
     build_tidepool()
     build_ocean_floor()
+    apply_mood()
 
 
 def capture_renders():

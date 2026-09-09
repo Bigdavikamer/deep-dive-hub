@@ -111,6 +111,7 @@ import bpy
 
 import config
 from lib import mesh as dd_mesh
+from lib import mood as dd_mood
 from lib import palette as dd_palette
 from lib import scene as dd_scene
 
@@ -452,7 +453,13 @@ def build_markers():
                      LANTERN_BODY_W + 0.6, LANTERN_ROOF_H, yaw)
         _add_box(bm, px, lantern_y, lz + LANTERN_PLATE_H + LANTERN_BODY_H + LANTERN_ROOF_H,
                  0.35, 0.35, LANTERN_FINIAL_H, yaw)
-        objs.append(_finalize(bm, f"DD_Marker_Plot_{tag}_Lantern", loc))
+        lantern = _finalize(bm, f"DD_Marker_Plot_{tag}_Lantern", loc)
+        # Mood lever 1: none of the seven plot lanterns is a lit site, so their
+        # glass goes in the glass slot for Phase 8 to paint dark. The band is
+        # local, and _finalize has already put local Z=0 at the plate's base.
+        dd_mood.mark_glass(lantern, LANTERN_PLATE_H - 0.01,
+                           LANTERN_PLATE_H + LANTERN_BODY_H + 0.01)
+        objs.append(lantern)
 
         # 5. interactable plaque on the post's plaza-facing side. Geometry only;
         #    Phase 8 paints it biolume_cyan (already on validate.py's
