@@ -34,10 +34,14 @@ against a concrete object now rather than deferred on the assumption that
 a future phase will happen to clear it. Phase 5 purges and replaces these,
 same pattern as Phase 3 superseding Phase 1's greybox shop.
 
-Market cross placed at r=145, due west (angle 180), just outside the
-plaza ring on the spawn approach -- "the plaza's west opening where spawn
-arrives" is otherwise unconstrained by config.py, so this is a design
-placement, not a pinned number.
+Market cross: "the plaza's west opening where spawn arrives" is not pinned
+by config.py, so its placement is a design call. The original r=145 on the
+180 axis was wrong -- PLAZA_OUTER_R is by construction the plot ring's near
+pad edge, so "just outside the plaza ring" put the plinth on plot 4's pad
+and across the entrance stair Phase 5 later built there. Now r=120,
+angle 192: fully on the plaza deck, clear of Chandler's Cut (which bows
+north through this radius), ~26 studs from spawn so a player arrives
+beside it, and off the spawn->shop sightline axis rather than blocking it.
 
 Idempotent: purges "DD_Struct_PlazaFloor" (Phase 1's placeholder gets
 replaced), "DD_Struct_PlazaStep", "DD_Struct_Path_", "DD_Struct_LaneSign_",
@@ -83,7 +87,18 @@ SIGN_PLAQUE_W = 5.0
 SIGN_PLAQUE_H = 3.0
 SIGN_PLAQUE_D = 0.6
 
-MARKET_CROSS_XY = (-145.0, 0.0)
+# Polar, not a hardcoded pair: r=145 on the 180 axis put the plinth (8-stud
+# radius) on plot 4's pad and across its entrance stair -- PLAZA_OUTER_R *is*
+# the plot ring's near pad edge, so "just outside the plaza ring" and "on a
+# plot" are the same place. Moved inside the deck and off the lane axis:
+# r=120 keeps the whole plinth on the plaza floor (30..135), and the 12 deg
+# southward offset clears Chandler's Cut, which bows north here.
+MARKET_CROSS_R = 120.0
+MARKET_CROSS_ANGLE_DEG = 192.0
+MARKET_CROSS_XY = (
+    MARKET_CROSS_R * math.cos(math.radians(MARKET_CROSS_ANGLE_DEG)),
+    MARKET_CROSS_R * math.sin(math.radians(MARKET_CROSS_ANGLE_DEG)),
+)
 MARKET_CROSS_TIER_H = 1.0
 MARKET_CROSS_TIER_RADII = (8.0, 6.5, 5.0)
 MARKET_CROSS_COLUMN_R = 1.0
@@ -244,7 +259,7 @@ def build_lane_signs():
 def build_market_cross():
     objs = []
     x, y = MARKET_CROSS_XY
-    z = 0.0
+    z = config.PLAZA_LIFT  # stands on the plaza deck now, not on ground
     for i, r in enumerate(MARKET_CROSS_TIER_RADII):
         tier = dd_mesh.cylinder(f"DD_Struct_MarketCross_Tier{i}", r, MARKET_CROSS_TIER_H, base_z=0.0, segments=8)
         tier.location = (x, y, z)

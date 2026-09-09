@@ -142,52 +142,128 @@ def wedge_solid(name, radius, angle_start_deg, angle_end_deg, thickness, segment
     return bm_to_object(name, bm, collection=collection)
 
 
-def terrain_quadrant(name, angle_start_deg, angle_end_deg, segments, mid_radius, outer_radius_fn, outer_z_fn, thickness, base_z=0.0, collection=None):
-    """One quadrant of undulating terrain: a flat disc from the centre out
-    to `mid_radius`, then a variable-radius / variable-height band from
-    `mid_radius` out to `outer_radius_fn(angle)` at height `base_z +
-    outer_z_fn(angle)`. Fully solid/watertight (top, bottom, rim wall, two
-    radial end walls), built directly with bmesh -- this is how the island's
-    coastline gets per-angle noise/terracing without a boolean.
+def terrain_quadrant(name, angle_samples_deg, ring_radii, outer_radius_fn, outer_z_fn, thickness, pockets=(), base_z=0.0, collection=None):
+    """One quadrant of island terrain as a single watertight solid: a polar
+    grid over `angle_samples_deg` x `ring_radii` at `base_z`, then a final
+    variable band from ring_radii[-1] out to `outer_radius_fn(angle)` at
+    height `base_z + outer_z_fn(angle)`. Built directly with bmesh -- this
+    is how the coastline gets per-angle noise/terracing, and the plot ring
+    its recessed terraces, without a boolean.
 
+    `angle_samples_deg` is an explicit ascending list rather than a segment
+    count so that pocket boundaries can be placed on exact grid lines --
+    that is what keeps the recesses quad-only and manifold.
+    `ring_radii` is ascending and must start at 0 (the centre fan).
     `outer_radius_fn`/`outer_z_fn` take an angle in degrees and must return
-    the exact same value for a shared boundary angle between two adjacent
-    quadrant calls, or the quadrants won't line up seamlessly.
+    the same value for a boundary angle shared by two adjacent quadrant
+    calls, or the quadrants won't line up seamlessly.
+
+    `pockets` are recessed plot terraces, each `(a_min, a_max, r_min, r_max,
+    floor_z)` in degrees/studs. Bounds MUST fall exactly on angle samples and
+    ring radii; a pocket straddling a quadrant boundary is passed to both
+    quadrants clipped to each one's angular range, and deliberately gets no
+    wall at that seam (the quadrant's own end wall closes it there, so the
+    recess reads as continuous across the two meshes instead of being
+    bisected by a visible interior wall).
     """
+    eps = 1e-6
     bm = bmesh.new()
-    mid_top, mid_bot, outer_top, outer_bot = [], [], [], []
-    for i in range(segments + 1):
-        t_deg = angle_start_deg + (angle_end_deg - angle_start_deg) * i / segments
+    bottom_z = base_z - thickness
+    n_a, n_r = len(angle_samples_deg), len(ring_radii)
+
+    def polar(r, t_deg, z):
         t = math.radians(t_deg)
-        cos_t, sin_t = math.cos(t), math.sin(t)
+        return (r * math.cos(t), r * math.sin(t), z)
 
-        mx, my = mid_radius * cos_t, mid_radius * sin_t
-        mid_top.append(bm.verts.new((mx, my, base_z)))
-        mid_bot.append(bm.verts.new((mx, my, base_z - thickness)))
+    def cell_floor_z(j, k):
+        """Floor Z if grid cell (angles j..j+1, rings k..k+1) is inside a
+        pocket, else None."""
+        a0, a1 = angle_samples_deg[j], angle_samples_deg[j + 1]
+        r0, r1 = ring_radii[k], ring_radii[k + 1]
+        for pa0, pa1, pr0, pr1, floor_z in pockets:
+            if a0 >= pa0 - eps and a1 <= pa1 + eps and r0 >= pr0 - eps and r1 <= pr1 + eps:
+                return floor_z
+        return None
 
+    centre_top = bm.verts.new((0.0, 0.0, base_z))
+    centre_bot = bm.verts.new((0.0, 0.0, bottom_z))
+    top = [[None] * n_r for _ in range(n_a)]
+    bot = [[None] * n_r for _ in range(n_a)]
+    outer_top, outer_bot = [], []
+    for j, t_deg in enumerate(angle_samples_deg):
+        for k in range(1, n_r):
+            top[j][k] = bm.verts.new(polar(ring_radii[k], t_deg, base_z))
+            bot[j][k] = bm.verts.new(polar(ring_radii[k], t_deg, bottom_z))
         r_out = outer_radius_fn(t_deg)
-        z_out = base_z + outer_z_fn(t_deg)
-        ox, oy = r_out * cos_t, r_out * sin_t
-        outer_top.append(bm.verts.new((ox, oy, z_out)))
-        outer_bot.append(bm.verts.new((ox, oy, base_z - thickness)))
+        outer_top.append(bm.verts.new(polar(r_out, t_deg, base_z + outer_z_fn(t_deg))))
+        outer_bot.append(bm.verts.new(polar(r_out, t_deg, bottom_z)))
 
-    center_top = bm.verts.new((0.0, 0.0, base_z))
-    center_bot = bm.verts.new((0.0, 0.0, base_z - thickness))
+    pocket_cells = {}
+    for j in range(n_a - 1):
+        for k in range(1, n_r - 1):
+            floor_z = cell_floor_z(j, k)
+            if floor_z is not None:
+                pocket_cells[(j, k)] = floor_z
+    floor_v = {}
+    for (j, k), floor_z in pocket_cells.items():
+        for jj in (j, j + 1):
+            for kk in (k, k + 1):
+                if (jj, kk) not in floor_v:
+                    floor_v[(jj, kk)] = bm.verts.new(polar(ring_radii[kk], angle_samples_deg[jj], floor_z))
     bm.verts.ensure_lookup_table()
 
-    for i in range(segments):
-        bm.faces.new((center_top, mid_top[i], mid_top[i + 1]))
-        bm.faces.new((center_bot, mid_bot[i + 1], mid_bot[i]))
-        bm.faces.new((mid_top[i], mid_top[i + 1], outer_top[i + 1], outer_top[i]))
-        bm.faces.new((mid_bot[i], outer_bot[i], outer_bot[i + 1], mid_bot[i + 1]))
-        bm.faces.new((outer_top[i], outer_top[i + 1], outer_bot[i + 1], outer_bot[i]))
+    for j in range(n_a - 1):
+        bm.faces.new((centre_top, top[j][1], top[j + 1][1]))
+        bm.faces.new((centre_bot, bot[j + 1][1], bot[j][1]))
+        for k in range(1, n_r - 1):
+            if (j, k) in pocket_cells:
+                bm.faces.new((floor_v[(j, k)], floor_v[(j + 1, k)], floor_v[(j + 1, k + 1)], floor_v[(j, k + 1)]))
+            else:
+                bm.faces.new((top[j][k], top[j + 1][k], top[j + 1][k + 1], top[j][k + 1]))
+            bm.faces.new((bot[j][k], bot[j][k + 1], bot[j + 1][k + 1], bot[j + 1][k]))
+        last = n_r - 1
+        bm.faces.new((top[j][last], top[j + 1][last], outer_top[j + 1], outer_top[j]))
+        bm.faces.new((bot[j][last], outer_bot[j], outer_bot[j + 1], bot[j + 1][last]))
+        bm.faces.new((outer_top[j], outer_top[j + 1], outer_bot[j + 1], outer_bot[j]))
 
-    # two radial end walls (quadrant boundary edges)
-    for idx in (0, segments):
-        bm.faces.new((center_top, mid_top[idx], mid_bot[idx], center_bot) if idx == 0
-                      else (center_top, center_bot, mid_bot[idx], mid_top[idx]))
-        bm.faces.new((mid_top[idx], outer_top[idx], outer_bot[idx], mid_bot[idx]) if idx == 0
-                      else (mid_top[idx], mid_bot[idx], outer_bot[idx], outer_top[idx]))
+    # pocket walls: only where a recessed cell meets un-recessed ground
+    # inside this quadrant. The angular checks are deliberately bounded by
+    # the quadrant's own cell range so a pocket split across two quadrants
+    # gets no wall at the seam.
+    for (j, k) in pocket_cells:
+        if (j, k - 1) not in pocket_cells:
+            bm.faces.new((top[j][k], top[j + 1][k], floor_v[(j + 1, k)], floor_v[(j, k)]))
+        if (j, k + 1) not in pocket_cells:
+            bm.faces.new((top[j][k + 1], floor_v[(j, k + 1)], floor_v[(j + 1, k + 1)], top[j + 1][k + 1]))
+        if j - 1 >= 0 and (j - 1, k) not in pocket_cells:
+            bm.faces.new((top[j][k], floor_v[(j, k)], floor_v[(j, k + 1)], top[j][k + 1]))
+        if j + 1 <= n_a - 2 and (j + 1, k) not in pocket_cells:
+            bm.faces.new((top[j + 1][k], top[j + 1][k + 1], floor_v[(j + 1, k + 1)], floor_v[(j + 1, k)]))
+
+    # Two radial end walls, each built as one boundary loop and then
+    # triangulated. Emitting a quad per radial cell instead would double-cover
+    # the vertical edge at a pocket rim (a full-height 0..-6 edge from the
+    # un-recessed cell overlapping the floor-height edge from the recessed
+    # one) and leave the quadrant non-manifold; walking the actual top
+    # profile puts the step on the loop, where it is shared with the pocket's
+    # own rim wall.
+    end_walls = []
+    for j_node, j_cell in ((0, 0), (n_a - 1, n_a - 2)):
+        outline = [centre_top, top[j_node][1]]
+        for k in range(1, n_r - 1):
+            recessed = (j_cell, k) in pocket_cells
+            edge_in = floor_v[(j_node, k)] if recessed else top[j_node][k]
+            edge_out = floor_v[(j_node, k + 1)] if recessed else top[j_node][k + 1]
+            if outline[-1] is not edge_in:
+                outline.append(edge_in)
+            outline.append(edge_out)
+        outline.append(outer_top[j_node])
+        outline.append(outer_bot[j_node])
+        for k in range(n_r - 1, 0, -1):
+            outline.append(bot[j_node][k])
+        outline.append(centre_bot)
+        end_walls.append(bm.faces.new(outline))
+    bmesh.ops.triangulate(bm, faces=end_walls, quad_method="BEAUTY", ngon_method="BEAUTY")
 
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     bm.normal_update()

@@ -12,11 +12,22 @@ Design notes / scope calls (flagged, not silently assumed):
     boundary angles (+/-GATE_HALF_ANGLE) so the coastline still meets
     Phase 1's beach ramp corners exactly -- no seam, no rebuild of Phase 1.
   - The flat-to-terraced transition happens between MID_RADIUS (215, just
-    outside the plot ring's outer reach) and the coastline. Plots and plaza
-    (r<=205ish) stay on the flat Z=0 base Phase 1 already built on;
-    "recessed pad in a raised hillside" is read as intentional terracing,
-    not a defect. Full plaza-side stair integration is explicitly Phase 4
-    scope ("west terrace lift and steps"), not this one.
+    outside the plot ring's outer reach) and the coastline.
+  - PLOT POCKETS (added after Phase 5): the plot ring carries seven recessed
+    terraces. Without them the pads at PLOT_Z=-1.5 were entirely buried --
+    this terrain was solid at GROUND_Z from the centre out to MID_RADIUS, so
+    the walkable surface inside every plot was terrain, not pad, and only
+    ~0.5 studs of Phase 5's 2-stud kerb cleared the ground. Each pocket is
+    an annular sector sized to contain the whole 70x70 pad (its near corners
+    reach r=139.5 at +/-14.5 deg, its far corners r=208 at +/-9.7 deg), so
+    POCKET_HALF_ANGLE=15.5 and r 138..210 enclose it with margin, and the
+    5.3 deg left between neighbouring pockets stays as a solid verge.
+    POCKET_INNER_R is 138 and not the pad's own near edge at 135 on purpose:
+    135..138 is Phase 4's plaza step ring, and starting the recess any
+    further in would undercut it. The floor sits 0.4 below PLOT_Z so the pad
+    reads as a raised paving slab inside the terrace rather than z-fighting
+    a coplanar floor, and the sector-minus-square remainder becomes real
+    ground for Phase 7's "plot_surround" scatter zone to sit on.
   - Tide pool rim Z is set to a modest local value (2.0), not the full
     WEST_TERRACE_LIFT -- keeps it visually coherent with the flat terrain
     immediately around it in this pass; later phases can grade the ground
@@ -75,6 +86,12 @@ NOTCH_HALF_WIDTH = 10.0
 
 TIDEPOOL_RIM_Z = 2.0
 
+# recessed plot terraces -- see the pocket note in the module docstring
+POCKET_INNER_R     = 138.0   # outer edge of Phase 4's plaza step ring
+POCKET_OUTER_R     = 210.0   # clears the pad's far corners at r=208
+POCKET_HALF_ANGLE  = 15.5    # clears the pad's near corners at +/-14.5 deg
+POCKET_FLOOR_Z     = config.PLOT_Z - 0.4
+
 noise.seed_set(config.SCATTER_SEED)
 
 
@@ -132,9 +149,33 @@ def purge():
         dd_scene.purge_by_prefix(prefix)
 
 
+def plot_pockets():
+    """One recessed terrace per plot, as (a_min, a_max, r_min, r_max, floor_z)."""
+    return [
+        (a - POCKET_HALF_ANGLE, a + POCKET_HALF_ANGLE,
+         POCKET_INNER_R, POCKET_OUTER_R, POCKET_FLOOR_Z)
+        for a in config.PLOT_ANGLES_DEG
+    ]
+
+
+def _angle_samples(a0, a1, per_degree, boundaries):
+    """Uniform coastline sampling with every pocket edge forced onto an exact
+    grid line -- a uniform sample within 0.05 deg of a pocket edge is dropped
+    in favour of the edge, never the other way round, since the pocket bounds
+    are what has to land exactly."""
+    n = max(4, round((a1 - a0) * per_degree))
+    uniform = [a0 + (a1 - a0) * i / n for i in range(n + 1)]
+    inside = [b for b in boundaries if a0 + 0.05 < b < a1 - 0.05]
+    kept = [u for u in uniform if all(abs(u - b) > 0.05 for b in inside)]
+    return sorted(kept + inside)
+
+
 def build_quadrants():
     arc = 360.0 - 2.0 * config.GATE_HALF_ANGLE
     per_degree = config.COAST_SEGMENTS / arc
+    ring_radii = [0.0, POCKET_INNER_R, POCKET_OUTER_R, MID_RADIUS]
+    pockets = plot_pockets()
+    boundaries = [edge for p in pockets for edge in (p[0], p[1])]
     quadrants = [
         ("NE", config.GATE_HALF_ANGLE, 90.0),
         ("NW", 90.0, 180.0),
@@ -143,16 +184,23 @@ def build_quadrants():
     ]
     objs = []
     for suffix, a0, a1 in quadrants:
-        segments = max(4, round((a1 - a0) * per_degree))
+        # three of the seven pockets straddle a quadrant boundary (at 90, 180
+        # and 270); each half is passed to its own quadrant clipped to that
+        # quadrant's arc, and terrain_quadrant leaves the seam wall-less so
+        # the recess reads as one terrace across the two meshes.
+        clipped = [
+            (max(pa0, a0), min(pa1, a1), pr0, pr1, floor_z)
+            for pa0, pa1, pr0, pr1, floor_z in pockets
+            if min(pa1, a1) - max(pa0, a0) > 0.05
+        ]
         obj = dd_mesh.terrain_quadrant(
             f"DD_Terrain_Island_{suffix}",
-            angle_start_deg=a0,
-            angle_end_deg=a1,
-            segments=segments,
-            mid_radius=MID_RADIUS,
+            angle_samples_deg=_angle_samples(a0, a1, per_degree, boundaries),
+            ring_radii=ring_radii,
             outer_radius_fn=coast_radius,
             outer_z_fn=terrace_z,
             thickness=ISLAND_THICKNESS,
+            pockets=clipped,
             base_z=config.GROUND_Z,
         )
         dd_mesh.shade_flat(obj)
@@ -249,6 +297,17 @@ def capture_renders():
         fov_deg=70.0,
     )
     dd_scene.render_to_file(eye_cam, os.path.join(renders_dir, "p2_spawn_eye.png"), xray=False)
+
+    # plot pocket check: oblique from over the plaza rim down into plot 4's
+    # recessed terrace, the one view that shows whether the pad is actually
+    # exposed and how the plaza edge, entrance stair and pocket wall meet.
+    pocket_cam = dd_scene.setup_look_at_camera(
+        "RenderCam_PlotPocket",
+        location=(-96.0, 26.0, 42.0),
+        target=(config.plot_xy(3)[0], config.plot_xy(3)[1], config.PLOT_Z),
+        fov_deg=55.0,
+    )
+    dd_scene.render_to_file(pocket_cam, os.path.join(renders_dir, "p2_plot_pocket.png"), xray=False)
 
     # west-terrace / tidepool check angle
     west_cam = dd_scene.setup_eye_camera(
