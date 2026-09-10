@@ -40,28 +40,52 @@ FBX_EXPORT_KWARGS = dict(
 )
 
 
-def _duplicate_for_export(obj, tmp_collection):
-    """Deep-copy obj + its mesh data into tmp_collection, bake its modifiers
-    (evaluated via depsgraph, not bpy.ops.object.modifier_apply) and bake any
-    residual transform, so the export always meets the identity-transform /
-    origin-at-base-centre contract regardless of what the build script left
-    in place."""
+def bake_shared_meshes(mesh_datablocks):
+    """Bevel each UNIQUE mesh datablock once and return {orig name: baked}.
+
+    Baking per object would be the obvious thing and would be wrong. Phase 7b
+    places ~490 instances that share ~90 kit datablocks by design, so that one
+    barrel mesh becomes one reused MeshId in Studio; copying the mesh per
+    object turns 294 datablocks into 816 and undoes the entire linked-data
+    strategy -- hundreds of separate uploads and a Studio import that crawls.
+    So the bevel is applied to the shared mesh, once, and every instance keeps
+    pointing at the same result.
+
+    The bevel is added here rather than in the build scripts on purpose: the
+    authored sources stay editable and re-runnable, which is the documented fix
+    for the "bevel modifier not applied before export" failure mode. Nothing in
+    the build carries object-level modifiers, so baking off a holder object
+    loses nothing.
+    """
+    baked = {}
+    holder_coll = bpy.data.collections.new("DD_BakeTmp")
+    bpy.context.scene.collection.children.link(holder_coll)
+    try:
+        for mesh in mesh_datablocks:
+            holder = bpy.data.objects.new(f"_ddbake_{mesh.name}", mesh)
+            holder_coll.objects.link(holder)
+            dd_mesh.bevel_edges(holder, config.BEVEL_WIDTH, config.BEVEL_SEGMENTS)
+            bpy.context.view_layer.update()
+            dg = bpy.context.evaluated_depsgraph_get()
+            baked[mesh.name] = bpy.data.meshes.new_from_object(holder.evaluated_get(dg))
+            bpy.data.objects.remove(holder, do_unlink=True)
+    finally:
+        bpy.data.collections.remove(holder_coll)
+    return baked
+
+
+def _duplicate_for_export(obj, tmp_collection, baked):
+    """A node referencing the shared baked mesh, keeping the object's own
+    transform. Rotation and scale stay on the node rather than being baked into
+    vertices: placed instances legitimately carry both (that is how one mesh
+    becomes thirty differently-oriented barrels), and baking them would force a
+    unique mesh per instance -- the very thing bake_shared_meshes avoids.
+    Source meshes already hold identity rotation and scale, so nothing is lost
+    for them either."""
     dup = obj.copy()
-    dup.data = obj.data.copy()
     dup.modifiers.clear()
+    dup.data = baked[obj.data.name]
     tmp_collection.objects.link(dup)
-
-    if obj.modifiers:
-        depsgraph = bpy.context.evaluated_depsgraph_get()
-        eval_obj = obj.evaluated_get(depsgraph)
-        baked_mesh = bpy.data.meshes.new_from_object(eval_obj)
-        old_mesh = dup.data
-        dup.data = baked_mesh
-        if old_mesh.users == 0:
-            bpy.data.meshes.remove(old_mesh)
-
-    dd_mesh.apply_transform(dup)
-    dd_scene.set_origin_to_base(dup)
     return dup
 
 
@@ -84,10 +108,13 @@ def export_collection(collection_name, out_path):
     for o in bpy.data.objects:
         o.select_set(False)
 
+    unique = {o.data.name: o.data for o in mesh_objs}
+    baked = bake_shared_meshes(list(unique.values()))
+
     duplicates = []
     try:
         for obj in mesh_objs:
-            dup = _duplicate_for_export(obj, tmp_coll)
+            dup = _duplicate_for_export(obj, tmp_coll, baked)
             dup.select_set(True)
             duplicates.append(dup)
         bpy.context.view_layer.objects.active = duplicates[0]
@@ -99,13 +126,14 @@ def export_collection(collection_name, out_path):
             selected_editable_objects=duplicates,
         ):
             bpy.ops.export_scene.fbx(filepath=out_path, **FBX_EXPORT_KWARGS)
-        print(f"export_fbx: wrote {out_path} ({len(duplicates)} objects)")
+        print(f"export_fbx: wrote {out_path} "
+              f"({len(duplicates)} objects, {len(unique)} shared meshes)")
     finally:
         for dup in duplicates:
-            mesh_data = dup.data
             bpy.data.objects.remove(dup, do_unlink=True)
-            if mesh_data.users == 0:
-                bpy.data.meshes.remove(mesh_data)
+        for mesh in baked.values():
+            if mesh.users == 0:
+                bpy.data.meshes.remove(mesh)
         bpy.data.collections.remove(tmp_coll)
 
     return True

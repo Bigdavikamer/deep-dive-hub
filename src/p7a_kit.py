@@ -149,16 +149,24 @@ def rope_line(bm, v, rng):
         pts.append((-span / 2 + span * t, 0.0, top - sag * math.sin(math.pi * t)))
     for i in range(n):
         P.strut(bm, pts[i], pts[i + 1], 0.22)
+    # Lanterns hang LEVEL with each other, on hangers of differing length,
+    # rather than each dangling a fixed drop below a sagging line. That is how
+    # a real festoon is rigged, and it puts every lantern body in one flat Z
+    # band so mark_glass can find them -- without it the glass is scattered
+    # through the mesh at per-hanger heights, and these lanterns ended up
+    # painted as pale rope canvas, reading as LIT when the whole point of the
+    # mood directive is that they are not.
     hangers = (2, 3, 4)[v]
+    lantern_top = top - sag - 1.9
     for k in range(hangers):
         t = (k + 1) / (hangers + 1)
         i = min(int(t * n), n - 1)
         x, _y, z = pts[i]
-        P.strut(bm, (x, 0, z), (x, 0, z - 1.6), 0.16)
+        P.strut(bm, (x, 0, z), (x, 0, lantern_top), 0.16)
         if v == 0:
-            P.box(bm, (x, 0, z - 2.4), (1.3, 1.3, 1.6))
+            P.box(bm, (x, 0, lantern_top - 0.8), (1.3, 1.3, 1.6))
         else:
-            P.cylinder(bm, (x, 0, z - 2.3), 0.55, 1.6, segments=6, r_top=0.0)
+            P.cylinder(bm, (x, 0, lantern_top - 0.8), 0.55, 1.6, segments=6, r_top=0.0)
 
 
 def net(bm, v, rng):
@@ -565,9 +573,10 @@ def story(bm, v, rng):
 # (category, asset key, variants, builder, glass band or None)
 KIT = [
     ("Prop", "Barrel", 3, barrel, None),
+    # "rope" marks the festoon lanterns' Z band -- see rope_line()
     ("Prop", "Crate", 4, crate, None),
     ("Prop", "RopeCoil", 2, rope_coil, None),
-    ("Overhead", "RopeLine", 3, rope_line, None),
+    ("Overhead", "RopeLine", 3, rope_line, "rope"),
     ("Prop", "DryingRack", 3, drying_rack, None),
     ("Prop", "HangingFish", 2, hanging_fish, None),
     ("Prop", "Net", 3, net, None),
@@ -664,6 +673,10 @@ def build():
                 dd_mood.mark_glass(obj, h - 3.5, h - 1.3)
             elif glass == "hang":
                 dd_mood.mark_glass(obj, 0.85, 2.9)
+            elif glass == "rope":
+                # the festoon lanterns all hang level, so they occupy one band
+                # at the bottom of the mesh; the line and hangers sit above it
+                dd_mood.mark_glass(obj, -0.01, 1.72)
             if (key, v) in WARM_VARIANTS:
                 dd_mood.mark_all(obj, dd_mood.WARM_SLOT)
             if key == "JarShelf":

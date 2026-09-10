@@ -566,6 +566,11 @@ def bevel_edges(obj, width, segments=1):
     mod.segments = segments
     mod.limit_method = "ANGLE"
     mod.angle_limit = math.radians(30.0)
+    # Without this a 0.6-stud bevel self-intersects on anything small -- the
+    # kit has props under 2 studs across, and a mug would turn inside out.
+    # Clamping lets one width serve the whole build: big structural edges get
+    # the full 0.6, small props get as much as their geometry allows.
+    mod.use_clamp_overlap = True
     return mod
 
 
