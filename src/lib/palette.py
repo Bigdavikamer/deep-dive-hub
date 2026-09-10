@@ -92,7 +92,8 @@ def debug_color_for(obj_name):
 
 GLASS_DARK_HEX = "#1A1E20"   # unlit lantern glass, preview only
 GLASS_LIT_HEX = "#E8B85C"    # = PALETTE lantern_gold
-WARM_ACCENT_HEX = "#8F4034"  # = PALETTE cloth_red, the rationed warm accent
+WARM_ACCENT_HEX = "#8F4034"   # = PALETTE cloth_red, the rationed warm accent
+SPECIMEN_GLOW_HEX = "#93D9B8"  # = PALETTE specimen_glow, lore props only
 
 
 def apply_debug_colors(objs):
@@ -126,5 +127,8 @@ def apply_debug_colors(objs):
             elif i == mood.WARM_SLOT:
                 o.data.materials[i] = get_material(
                     f"DDPreview_{WARM_ACCENT_HEX.lstrip('#')}", WARM_ACCENT_HEX)
+            elif i == mood.GLOW_SLOT:
+                o.data.materials[i] = get_material(
+                    f"DDPreview_{SPECIMEN_GLOW_HEX.lstrip('#')}", SPECIMEN_GLOW_HEX)
             else:
                 o.data.materials[i] = base

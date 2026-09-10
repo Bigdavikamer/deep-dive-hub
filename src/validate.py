@@ -74,14 +74,30 @@ def check_tri_cap(objs):
     return fails
 
 
+def asset_key(obj_name):
+    """The asset token of DD_<Category>_<Asset>_<Variant>, or None."""
+    parts = base_name(obj_name).split("_")
+    return parts[2] if len(parts) >= 3 else None
+
+
 def check_tri_budget(objs):
+    """Per-asset budget where the prop library defines one (config's
+    PROP_TRI_BUDGET, from the CLAUDE.md table), else the per-category
+    TRI_BUDGET. The two disagree for set-piece props -- DD_Prop caps at 150
+    while the table allows a 900-tri market stall -- and the per-asset figure
+    is the more specific."""
     fails = []
     for o in objs:
         if o.type != "MESH":
             continue
+        tris = triangle_count(o)
+        per_asset = config.PROP_TRI_BUDGET.get(asset_key(o.name))
+        if per_asset is not None:
+            if tris > per_asset:
+                fails.append(f"{o.name}: {tris} tris > {per_asset} per-asset budget")
+            continue
         for prefix, budget in config.TRI_BUDGET.items():
             if o.name.startswith(prefix):
-                tris = triangle_count(o)
                 if tris > budget:
                     fails.append(f"{o.name}: {tris} tris > {budget} budget for {prefix}")
                 break

@@ -112,8 +112,10 @@ OWNED_PREFIXES = [
     "DD_Lamp_Breakwater",
     "DD_Dock_North",             # supersedes Phase 1's greybox planks
     "DD_Dock_South",
-    "DD_Sub_Buoy",
     "DD_Sub_Wreck",
+    # DD_Sub_Buoy is deliberately absent: the Phase 7a kit owns those meshes
+    # now, and purging a prefix this phase no longer builds would delete them
+    # whenever p6 is re-run on its own.
 ]
 
 
@@ -532,7 +534,12 @@ def build():
     build_cellar_door()
     build_docks()
     build_kiosk()
-    build_buoys()
+    # Buoys are NOT built here any more. The Phase 7a library specifies Buoy
+    # with 3 variants, so the kit owns those meshes and Phase 7b places them as
+    # linked instances -- same reasoning as kelp and coral. Building them here
+    # too collided on DD_Sub_Buoy_A/B/C (Blender appended ".001", which fails
+    # the naming regex) and would have forked the mesh data besides. The wreck
+    # stays: it is a unique set piece with no kit entry.
     build_wreck()
     apply_mood()
 

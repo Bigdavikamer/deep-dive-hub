@@ -30,6 +30,7 @@ import bpy
 COLOR_ATTR = "DepthDarken"
 GLASS_SLOT = 1
 WARM_SLOT = 2   # cloth_red / lantern_gold; rationed by WarmBudget
+GLOW_SLOT = 3   # specimen_glow; DD_Lore_* only, never biolume_cyan
 
 # Which object carries each site named in config.LIT_LANTERN_SITES. Entries may
 # name objects that later phases build; is_lit() simply never matches those

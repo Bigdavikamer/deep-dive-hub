@@ -189,6 +189,28 @@ NPC_ANCHORS = [
     ("LampTender",    "wander"),             # roams between 5 candidate anchors
 ]
 
+# ---- per-asset triangle budgets (the Phase 7a prop library table) ----------
+# TRI_BUDGET above is per CATEGORY, and its DD_Prop entry (150) was written for
+# small scatter props. The prop library table in CLAUDE.md gives per-ASSET
+# budgets an order of magnitude larger for the set pieces -- a 900-tri market
+# stall, an 1800-tri hull under repair. Both are in the brief and they
+# contradict each other for anything big named DD_Prop_*. The per-asset figure
+# is the more specific of the two, so validate.py check 2 prefers it and falls
+# back to the category budget for anything not listed here. Keyed by the asset
+# token in DD_<Category>_<Asset>_<Variant>.
+PROP_TRI_BUDGET = {
+    "Barrel": 150, "Crate": 140, "RopeCoil": 120, "RopeLine": 400,
+    "DryingRack": 500, "HangingFish": 60, "Net": 350, "LanternPost": 250,
+    "HangingLantern": 120, "Bollard": 130, "MarketStall": 900,
+    "NoticeBoard": 300, "Well": 700, "TimberStack": 200, "Sawhorse": 120,
+    "HullRepair": 1800, "Rowboat": 400, "Tool": 80, "GuttingTable": 450,
+    "SaltVat": 200, "TallyBoard": 200, "TrophyRack": 900, "JarShelf": 350,
+    "Shrine": 800, "FossilArch": 2200, "BannerPole": 250, "Awning": 180,
+    "CrabPot": 160, "Buoy": 130, "Anchor": 400, "Kelp": 110, "Coral": 120,
+    "Ballast": 100, "SeaGrass": 60, "Heather": 70, "Pine": 900, "Rock": 120,
+    "Story": 90, "Gull": 90,
+}
+
 # ---- mood: abyss and restraint ---------------------------------------------
 LIT_LANTERN_SITES = [
     "spire_beacon", "breakwater_north_cap", "breakwater_south_cap",
