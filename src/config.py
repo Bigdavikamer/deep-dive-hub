@@ -138,6 +138,18 @@ ZONE_DENSITY = {
 }
 
 SCATTER_MIN_SPACING = 6.0    # poisson-disc radius between props, studs
+
+# ---- vignettes -------------------------------------------------------------
+# Props are placed as small anchored GROUPS, not as independent points.
+# Independent placement never reads as intentional however large or numerous
+# the props are: what says "someone put this here" is several related objects
+# together against a real feature, with genuinely clear ground around them.
+VIGNETTE_MIN_PROPS   = 3
+VIGNETTE_MAX_PROPS   = 6
+VIGNETTE_SPACING     = 1.8   # between props WITHIN one vignette; tight on purpose
+VIGNETTE_GAP_MIN     = 14.0  # clear ground between one vignette and the next
+VIGNETTE_ANCHOR_BIAS = 0.85  # fraction of anchors that must come from real features
+SIGHT_CLEARANCE      = 6.0   # extra lane standoff beyond LANE_CLEARANCE
 SCATTER_SINK        = -0.2   # sink props into ground so nothing floats
 WIND_LEAN_DEG       = 8.0    # vegetation leans this far AWAY from the ocean
 OVERHEAD_MIN_SITES  = 4      # minimum distinct overhead-layer locations

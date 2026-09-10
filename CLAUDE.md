@@ -213,6 +213,14 @@ ZONE_DENSITY = {
 }
 
 SCATTER_MIN_SPACING = 6.0    # poisson-disc radius between props, studs
+
+# ---- vignettes -------------------------------------------------------------
+VIGNETTE_MIN_PROPS   = 3
+VIGNETTE_MAX_PROPS   = 6
+VIGNETTE_SPACING     = 1.8
+VIGNETTE_GAP_MIN     = 14.0
+VIGNETTE_ANCHOR_BIAS = 0.85
+SIGHT_CLEARANCE      = 6.0
 SCATTER_SINK        = -0.2   # sink props into ground so nothing floats
 WIND_LEAN_DEG       = 8.0    # vegetation leans this far AWAY from the ocean
 OVERHEAD_MIN_SITES  = 4      # minimum distinct overhead-layer locations
