@@ -121,8 +121,14 @@ PLAZA_MIN_EMPTY    = 0.30    # >= 30% of plaza floor area stays clear
 # props per 1000 sq studs, by zone
 ZONE_DENSITY = {
     "traffic_lane":     0.0,
-    "plaza_open":       1.5,
-    "plaza_edge":       6.0,
+    # plaza_open 1.5 and plaza_edge 6.0 left the middle of the square reading
+    # as bare in the eye-level renders -- 17 and 62 props over 16.9k and 13.9k
+    # sq studs. Raised to 4.0 and 9.0. plaza_edge deliberately stays under
+    # district_core: the gradient lane -> edge -> core is what puts the clutter
+    # against the built mass and keeps the walking floor open, and inverting it
+    # would undo the rule rather than tune it.
+    "plaza_open":       7.0,
+    "plaza_edge":       9.0,
     "district_core":   11.0,
     "quay_rim":         9.0,
     "beach":            4.0,

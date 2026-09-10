@@ -202,8 +202,8 @@ PLAZA_MIN_EMPTY    = 0.30    # >= 30% of plaza floor area stays clear
 # props per 1000 sq studs, by zone
 ZONE_DENSITY = {
     "traffic_lane":     0.0,
-    "plaza_open":       1.5,
-    "plaza_edge":       6.0,
+    "plaza_open":       7.0,
+    "plaza_edge":       9.0,
     "district_core":   11.0,
     "quay_rim":         9.0,
     "beach":            4.0,

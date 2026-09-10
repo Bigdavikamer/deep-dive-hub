@@ -109,6 +109,17 @@ ZONE_PROPS = {
     "IslandRim": ["Rock"] * 2 + ["SeaGrass", "Heather", "Ballast", "Gull"],
 }
 
+# Assets that can carry open floor. Raising plaza_open's density alone did not
+# fix the square reading as bare, because the open zone drew mostly the same
+# small ground clutter as everywhere else and a crate does not register from 40
+# studs. These are the mid-layer shapes that do, and weighting them here is
+# what gives a player standing anywhere on the plaza three distinct points of
+# interest. The brief also puts the demountable stalls in the open square
+# specifically, so favouring them here follows it rather than bending it.
+OPEN_ZONE_ASSETS = {"MarketStall", "Well", "LanternPost", "NoticeBoard",
+                    "DryingRack", "TimberStack", "BannerPole", "Awning",
+                    "GuttingTable", "Rowboat", "SaltVat"}
+
 # props that read front-on: they keep a facing and only wobble around it
 ORIENTED = {"MarketStall", "NoticeBoard", "DryingRack", "TallyBoard", "Awning",
             "GuttingTable", "Well", "Rowboat", "BannerPole"}
@@ -340,6 +351,10 @@ def build():
         pool = [k for k in pool if k in kit]
         if not pool:
             continue
+        if zone == "plaza_open":
+            big = [k for k in pool if k in OPEN_ZONE_ASSETS]
+            if big:
+                pool = big * 3 + pool     # favour, without going exclusive
         asset = rng.choice(pool)
 
         variants = kit[asset]
