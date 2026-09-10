@@ -386,7 +386,13 @@ def fossil_arch(bm, v, rng):
     segments a side for a jaw that actually curves, 8 teeth each, and a
     buried root block so it reads as risen out of the sand rather than set
     on top of it."""
-    span, height = 15.0, 13.0
+    # 30 wide. The arch straddles the gate lane so players walk through it every
+    # dive, which means ALL of its low geometry has to clear the 16-stud
+    # corridor plus its 2-stud buffer. At span 24 the legs cleared but the
+    # lowest teeth -- offset inward and pointing further in -- reached about
+    # 9.8 studs and clipped the walk. Measuring the teeth rather than the legs
+    # is the point: the widest part of the silhouette was never the constraint.
+    span, height = 30.0, 15.0
     for sy in (-1, 1):
         prev = None
         n = 12
@@ -489,19 +495,21 @@ def rock(bm, v, rng):
 
 
 def pine(bm, v, rng):
-    """Wind-bent, west rim only. Leans WIND_LEAN_DEG away from the ocean; the
-    lean is baked here so the placed instances inherit it."""
-    lean = math.radians(config.WIND_LEAN_DEG * (1.6 if v == 0 else 2.2))
+    """Wind-shaped, west rim only. Built UPRIGHT: the lean comes from the
+    placement rotation, the same treatment every other DD_Nature_ instance
+    gets. Baking it into the mesh as well would double it, and it would stop
+    tracking WIND_LEAN_DEG if that value ever changed. The asymmetry -- one
+    taller, foliage massed off-centre -- stays in the geometry, which is what
+    makes the two pines read as a pair rather than a mirror."""
     h = 14.0 if v == 0 else 10.0
     segs = 3
+    drift = 0.45 if v == 0 else 0.8
     for i in range(segs):
-        t = i / segs
-        P.cylinder(bm, (h * t * math.sin(lean) * 0.6, 0, h * (t + 0.5 / segs)),
-                   0.75 - 0.18 * i, h / segs, segments=6, r_top=0.6 - 0.18 * i,
-                   pitch=lean)
+        P.cylinder(bm, (i * drift, 0, h * (i / segs + 0.5 / segs)),
+                   0.75 - 0.18 * i, h / segs, segments=6, r_top=0.6 - 0.18 * i)
     for k in range(3):
         z = h * (0.55 + k * 0.16)
-        P.sphere(bm, (z * math.sin(lean) * 0.7 + k * 0.4, 0, z),
+        P.sphere(bm, (drift * 2.0 + k * 0.55, rng.uniform(-0.4, 0.4), z),
                  3.0 - k * 0.7, segments=6, rings=3, squash=0.5,
                  jitter=0.25, rng=rng)
 

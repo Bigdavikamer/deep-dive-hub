@@ -430,11 +430,41 @@ def _collection_for(name):
 
 # ---- acceptance ------------------------------------------------------------
 
+WALK_HEIGHT = 6.0
+
+
+def _obstructs_at_walk_height(obj, lanes):
+    """True if any of the object's geometry below WALK_HEIGHT lies inside a
+    lane corridor. An arch you walk through has all its low geometry outside
+    the corridor even though its centre is on the path."""
+    mw = obj.matrix_world
+    base_z = obj.location.z
+    for v in obj.data.vertices:
+        p = mw @ v.co
+        if p.z - base_z <= WALK_HEIGHT and in_lane(p.x, p.y, lanes):
+            return True
+    return False
+
+
 def acceptance():
     lanes = lane_centrelines()
     inst = [o for o in bpy.data.objects if dd_scene.is_placed_instance(o.name)]
 
-    in_lanes = [o for o in inst if in_lane(o.location.x, o.location.y, lanes)]
+    # The rule exists so nothing obstructs a walking player, so the test is
+    # whether an object's geometry BELOW head height sits in the corridor --
+    # not whether its origin does. A rope line strung 14 studs up crosses a
+    # lane by design, and the fossil arch straddles one on purpose with its
+    # legs outside it; both would fail an origin-only test while leaving the
+    # walk completely clear. The cheap origin test still runs first and only
+    # objects it flags pay for the per-vertex check.
+    in_lanes = []
+    for o in inst:
+        if o.name.startswith("DD_Overhead_"):
+            continue
+        if not in_lane(o.location.x, o.location.y, lanes):
+            continue
+        if _obstructs_at_walk_height(o, lanes):
+            in_lanes.append(o)
     print(f"[15] props inside a traffic lane: {len(in_lanes)} "
           f"({'OK' if not in_lanes else 'FAIL'})")
 
