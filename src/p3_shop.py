@@ -62,9 +62,23 @@ ROOF_RIDGE_LEN = 20.0
 SPIRE_DRUM_R = 6.0
 SPIRE_DRUM_H = 4.0
 
+# Beacon lantern room, glazed, wrapping the spire drum -- the classic
+# lighthouse arrangement of a gallery, a glazed room, and a cornice under the
+# taper. This is "spire_beacon" in config.LIT_LANTERN_SITES: the map's
+# orientation anchor and one of only five lights left burning, so it is the
+# single most important lit surface in the build.
+BEACON_GALLERY_R = 7.6
+BEACON_GLASS_R = 6.6
+BEACON_CORNICE_R = 7.4
+BEACON_GALLERY_H = 0.8
+BEACON_GLASS_H = 3.2
+BEACON_CORNICE_H = 0.8
+BEACON_BASE_Z = config.SHOP_ROOF_Z - 0.4
+
 OWNED_PREFIXES = [
     "DD_Struct_Shop",   # catches Phase 1's single box + all sub-parts below
     "DD_Struct_Spire",
+    "DD_Lamp_SpireBeacon",
 ]
 
 
@@ -153,6 +167,42 @@ def build_spire():
     return [drum, cone]
 
 
+def build_beacon():
+    """Glazed lantern room wrapping the spire drum: gallery, glass, cornice,
+    merged into one object so the glass is a Z band that lib.mood.mark_glass
+    can send to the glass slot. Named DD_Lamp_SpireBeacon because that is what
+    lib.mood.LIT_SITE_OBJECTS maps config's "spire_beacon" to -- without this
+    object that entry in LIT_LANTERN_SITES pointed at nothing."""
+    import bmesh
+
+    from lib import mood as dd_mood
+
+    bm = bmesh.new()
+    z = 0.0
+    for radius, height in ((BEACON_GALLERY_R, BEACON_GALLERY_H),
+                           (BEACON_GLASS_R, BEACON_GLASS_H),
+                           (BEACON_CORNICE_R, BEACON_CORNICE_H)):
+        ring = bmesh.new()
+        bmesh.ops.create_cone(ring, cap_ends=True, cap_tris=True, segments=8,
+                              radius1=radius, radius2=radius, depth=height)
+        bmesh.ops.translate(ring, verts=ring.verts, vec=(0.0, 0.0, z + height / 2.0))
+        tmp = bpy.data.meshes.new("_tmp_beacon")
+        ring.to_mesh(tmp)
+        ring.free()
+        bm.from_mesh(tmp)
+        bpy.data.meshes.remove(tmp)
+        z += height
+
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.normal_update()
+    obj = dd_mesh.bm_to_object("DD_Lamp_SpireBeacon", bm)
+    obj.location = (0.0, 0.0, BEACON_BASE_Z)
+    _finish(obj)
+    dd_mood.mark_glass(obj, BEACON_GALLERY_H + 0.01,
+                       BEACON_GALLERY_H + BEACON_GLASS_H - 0.01)
+    return obj
+
+
 def build():
     dd_scene.ensure_collections()
     purge()
@@ -161,6 +211,7 @@ def build():
     build_upper_floor()
     build_roof()
     build_spire()
+    build_beacon()
 
 
 def capture_renders():
