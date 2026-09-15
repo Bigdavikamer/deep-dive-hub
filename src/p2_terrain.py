@@ -281,10 +281,20 @@ def build_ocean_floor():
     return obj
 
 
-def apply_mood():
+def apply_mood(quadrants):
     """Mood lever 3: depth darkens on its own, baked per-vertex so it holds
     independently of Studio's lighting. The two water bodies this phase owns
-    are the tide pool basin and the ocean floor past the shelf."""
+    are the tide pool basin and the ocean floor past the shelf.
+
+    Lever 5 (terrain colour blend) applies only to the four island quadrants:
+    those are the "flat single tone" the polish pass targets (BASE_MATERIAL
+    reads them as one uniform stone_light in p8_materials.py). The beach/
+    foreshore meshes p6_gate.py owns are already several distinct materials
+    per zone (wet sand, dry sand, shallow water...), not a flat tone, and the
+    tide pool / ocean floor keep the depth-darken treatment above instead --
+    adding a second, differently-scoped vertex-colour layer to the same
+    meshes would leave two bakes competing for the same read.
+    """
     from lib import mood as dd_mood
 
     s = config.DEPTH_DARKEN_STRENGTH
@@ -295,14 +305,18 @@ def apply_mood():
     if floor:
         dd_mood.apply_depth_darken(floor, s, config.OCEAN_FLOOR_NEAR, config.OCEAN_FLOOR_FAR)
 
+    for obj in quadrants:
+        dd_mood.apply_terrain_blend(
+            obj, config.TERRAIN_BLEND_BANDS, config.PALETTE, config.TERRAIN_MOSS_NORTH_BIAS)
+
 
 def build():
     dd_scene.ensure_collections()
     purge()
-    build_quadrants()
+    quadrants = build_quadrants()
     build_tidepool()
     build_ocean_floor()
-    apply_mood()
+    apply_mood(quadrants)
 
 
 def capture_renders():

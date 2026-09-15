@@ -117,6 +117,11 @@ PROP_MATERIAL = {
     "HangingLantern": "iron_dark",
 }
 
+# WEATHER_LIGHT_SLOT's "patched plank" contrast tone, per asset -- the other
+# two weathering slots (WEATHER_DARK_SLOT/WEATHER_RING_SLOT) are fixed colours
+# (tar_pitch, barnacle) regardless of asset, so only this one needs a table.
+WEATHER_PATCH_MATERIAL = {"HullRepair": "timber_warm", "Rowboat": "timber_dark"}
+
 # Objects allowed to carry biolume_cyan -- mirrors validate.py's allowlist.
 INTERACTABLE_HINTS = ("DD_Dock_", "DD_UI_LeaderboardStele", "DD_Marker_Plot",
                       "DD_Struct_ShopCounter", "DD_Struct_RowCounter",
@@ -188,6 +193,13 @@ def resolve_slots(obj):
             out.append(("cloth_red", 0.0))
         elif i == dd_mood.GLOW_SLOT:
             out.append((config.LORE_GLOW_COLOR, LORE_GLOW_STRENGTH))
+        elif i == dd_mood.WEATHER_DARK_SLOT:
+            out.append(("tar_pitch", 0.0))
+        elif i == dd_mood.WEATHER_RING_SLOT:
+            out.append(("barnacle", 0.0))
+        elif i == dd_mood.WEATHER_LIGHT_SLOT:
+            key = WEATHER_PATCH_MATERIAL.get(asset_key(obj.name), "timber_warm")
+            out.append((key, 0.0))
         else:
             key = base_material_key(obj)
             emit = GLOW_STRENGTH * 0.5 if key == config.INTERACTABLE_COLOR else 0.0
@@ -219,6 +231,26 @@ def apply_materials():
             mesh.materials[i] = dd_palette.material_for(
                 config.PALETTE, key, emission_strength=emit)
         painted_meshes.add(mesh.name)
+        count += 1
+    return count
+
+
+def apply_cavity_pass(strength):
+    """Polish-pass lever 4: cavity/AO darkening across the whole scene, not
+    just water. Baked once per unique mesh datablock (mirrors apply_materials'
+    dedup) since lib.mood.apply_cavity_darken is a pure function of local mesh
+    geometry -- concavity and ground-contact proximity don't depend on where
+    a linked instance was placed, so painting every instance separately would
+    just repeat the same result 30 times for a scattered prop."""
+    baked = set()
+    count = 0
+    for obj in bpy.data.objects:
+        if obj.type != "MESH" or not obj.name.startswith("DD_"):
+            continue
+        if obj.data.name in baked:
+            continue
+        dd_mood.apply_cavity_darken(obj, strength)
+        baked.add(obj.data.name)
         count += 1
     return count
 
@@ -359,9 +391,11 @@ def capture_renders():
 
 def build():
     painted = apply_materials()
+    cavity_count = apply_cavity_pass(config.CAVITY_DARKEN_STRENGTH)
     ok = audit_glow()
     write_manifest()
-    print(f"painted {painted} mesh datablocks; glow audit {'OK' if ok else 'FAILED'}")
+    print(f"painted {painted} mesh datablocks; cavity/AO baked on {cavity_count}; "
+          f"glow audit {'OK' if ok else 'FAILED'}")
     return ok
 
 

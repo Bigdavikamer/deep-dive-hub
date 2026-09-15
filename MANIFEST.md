@@ -6,7 +6,7 @@ Roblox conversion is `x, z, -y` — see `out/npc_anchors.json`, which is already
 - Objects: **816**
 - Unique mesh datablocks: **294**
 - Placed instances (linked): **512**
-- Total triangles: **57,704** (target < 400,000)
+- Total triangles: **58,064** (target < 400,000)
 
 Triangle counts are for the AUTHORED source. `export_fbx.py` adds the 0.6-stud structural bevel (1 segment, clamped) when it writes the FBX, which multiplies them by roughly 1.7x on large terrain and up to 3.7x on small props. The bevel is deliberately not in the build scripts, so the sources stay editable and re-runnable.
 
@@ -68,7 +68,7 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Lamp_RowBay_4` | 90.9 | 63.7 | 8.9 | 0.0 | Structures | 36 | `DD_Lamp_RowBay_4` | Box |
 | `DD_Lamp_SpireBeacon` | 0.0 | 0.0 | 47.6 | 0.0 | Structures | 96 | `DD_Lamp_SpireBeacon` | Box |
 | `DD_Lore_DiveLogWall` | 26.5 | -10.0 | 1.5 | 0.0 | Lore | 96 | `DD_Lore_DiveLogWall` | Box |
-| `DD_Lore_FossilArch_A` | 1085.5 | -75.7 | -0.7 | 0.0 | Lore | 464 | `DD_Lore_FossilArch_A` | PreciseConvexDecomposition |
+| `DD_Lore_FossilArch_A` | 1085.5 | -76.0 | -0.7 | 0.0 | Lore | 464 | `DD_Lore_FossilArch_A` | PreciseConvexDecomposition |
 | `DD_Lore_FossilArch_A.Gate.000` | 231.0 | 0.0 | -0.1 | 90.0 | Lore | 464 | `DD_Lore_FossilArch_A` | PreciseConvexDecomposition |
 | `DD_Lore_JarShelf_A` | 1028.5 | -76.0 | 1.5 | 0.0 | Lore | 168 | `DD_Lore_JarShelf_A` | Box |
 | `DD_Lore_JarShelf_A.ShopN.001` | 12.0 | 14.0 | 1.5 | 200.0 | Lore | 168 | `DD_Lore_JarShelf_A` | Box |
@@ -139,7 +139,7 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Nature_Gull_B.IslandRim.262` | -220.7 | -64.2 | 5.2 | -105.1 | Nature | 72 | `DD_Nature_Gull_B` | Box |
 | `DD_Nature_Gull_B.QuayRim.303` | 158.3 | 87.1 | -0.2 | 171.4 | Nature | 72 | `DD_Nature_Gull_B` | Box |
 | `DD_Nature_Gull_B.QuayRim.305` | 154.9 | 90.7 | -0.2 | 11.8 | Nature | 72 | `DD_Nature_Gull_B` | Box |
-| `DD_Nature_Heather_A` | 1009.5 | -133.0 | 0.0 | 0.0 | Nature | 48 | `DD_Nature_Heather_A` | Box |
+| `DD_Nature_Heather_A` | 1009.5 | -133.1 | 0.0 | 0.0 | Nature | 48 | `DD_Nature_Heather_A` | Box |
 | `DD_Nature_Heather_A.IslandRim.330` | 107.8 | 187.7 | -0.2 | -139.7 | Nature | 48 | `DD_Nature_Heather_A` | Box |
 | `DD_Nature_Heather_A.IslandRim.337` | -144.8 | 172.5 | 3.0 | 74.1 | Nature | 48 | `DD_Nature_Heather_A` | Box |
 | `DD_Nature_Heather_A.IslandRim.363` | -155.0 | -167.9 | 2.8 | -107.7 | Nature | 48 | `DD_Nature_Heather_A` | Box |
@@ -164,7 +164,7 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Nature_Heather_A.IslandRim.486` | 59.4 | 205.2 | -0.2 | -89.5 | Nature | 48 | `DD_Nature_Heather_A` | Box |
 | `DD_Nature_Heather_A.PlotSur.451` | -168.6 | 88.5 | -0.3 | 5.4 | Nature | 48 | `DD_Nature_Heather_A` | Box |
 | `DD_Nature_Heather_A.PlotSur.459` | -21.9 | -207.2 | -2.1 | 178.4 | Nature | 48 | `DD_Nature_Heather_A` | Box |
-| `DD_Nature_Heather_B` | 1028.5 | -133.0 | -0.1 | 0.0 | Nature | 48 | `DD_Nature_Heather_B` | Box |
+| `DD_Nature_Heather_B` | 1028.6 | -132.9 | -0.1 | 0.0 | Nature | 48 | `DD_Nature_Heather_B` | Box |
 | `DD_Nature_Heather_B.IslandRim.321` | 27.5 | 170.9 | -0.2 | -22.5 | Nature | 48 | `DD_Nature_Heather_B` | Box |
 | `DD_Nature_Heather_B.IslandRim.323` | -183.7 | -125.0 | 1.8 | -89.1 | Nature | 48 | `DD_Nature_Heather_B` | Box |
 | `DD_Nature_Heather_B.IslandRim.329` | -143.1 | 58.2 | -0.2 | -98.9 | Nature | 48 | `DD_Nature_Heather_B` | Box |
@@ -189,7 +189,7 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Nature_Heather_B.IslandRim.462` | 76.9 | -213.5 | -0.2 | -154.1 | Nature | 48 | `DD_Nature_Heather_B` | Box |
 | `DD_Nature_Heather_B.IslandRim.468` | -168.0 | 159.0 | 4.9 | -56.8 | Nature | 48 | `DD_Nature_Heather_B` | Box |
 | `DD_Nature_Heather_B.PlotSur.338` | 68.2 | -167.9 | -2.1 | -158.5 | Nature | 48 | `DD_Nature_Heather_B` | Box |
-| `DD_Nature_Heather_C` | 1047.7 | -133.1 | -0.2 | 0.0 | Nature | 48 | `DD_Nature_Heather_C` | Box |
+| `DD_Nature_Heather_C` | 1047.5 | -133.0 | -0.2 | 0.0 | Nature | 48 | `DD_Nature_Heather_C` | Box |
 | `DD_Nature_Heather_C.IslandRim.324` | -112.3 | 176.7 | -0.2 | -35.0 | Nature | 48 | `DD_Nature_Heather_C` | Box |
 | `DD_Nature_Heather_C.IslandRim.326` | 16.6 | 229.2 | -0.2 | 85.0 | Nature | 48 | `DD_Nature_Heather_C` | Box |
 | `DD_Nature_Heather_C.IslandRim.332` | -83.3 | 206.6 | 0.8 | -175.2 | Nature | 48 | `DD_Nature_Heather_C` | Box |
@@ -216,11 +216,11 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Nature_Heather_C.PlotSur.425` | 79.7 | 185.6 | -2.1 | -79.7 | Nature | 48 | `DD_Nature_Heather_C` | Box |
 | `DD_Nature_Heather_C.PlotSur.430` | 21.2 | 193.6 | -2.1 | 117.9 | Nature | 48 | `DD_Nature_Heather_C` | Box |
 | `DD_Nature_Heather_C.PlotSur.482` | 78.1 | -173.8 | -2.1 | -96.5 | Nature | 48 | `DD_Nature_Heather_C` | Box |
-| `DD_Nature_Pine_A` | 1067.3 | -133.0 | -0.0 | 0.0 | Nature | 144 | `DD_Nature_Pine_A` | Box |
+| `DD_Nature_Pine_A` | 1067.3 | -133.5 | -0.0 | 0.0 | Nature | 144 | `DD_Nature_Pine_A` | Box |
 | `DD_Nature_Pine_A.RimW.010` | -181.9 | 100.8 | -2.1 | 23.1 | Nature | 144 | `DD_Nature_Pine_A` | Box |
-| `DD_Nature_Pine_B` | 1086.9 | -132.9 | -0.0 | 0.0 | Nature | 144 | `DD_Nature_Pine_B` | Box |
+| `DD_Nature_Pine_B` | 1087.1 | -132.8 | -0.0 | 0.0 | Nature | 144 | `DD_Nature_Pine_B` | Box |
 | `DD_Nature_Pine_B.RimW.011` | -207.6 | 51.8 | -0.2 | 120.1 | Nature | 144 | `DD_Nature_Pine_B` | Box |
-| `DD_Nature_SeaGrass_A` | 952.8 | -133.2 | 0.0 | 0.0 | Nature | 48 | `DD_Nature_SeaGrass_A` | Box |
+| `DD_Nature_SeaGrass_A` | 952.5 | -133.0 | 0.0 | 0.0 | Nature | 48 | `DD_Nature_SeaGrass_A` | Box |
 | `DD_Nature_SeaGrass_A.Beach.333` | 246.9 | 162.2 | -5.4 | 78.0 | Nature | 48 | `DD_Nature_SeaGrass_A` | Box |
 | `DD_Nature_SeaGrass_A.Beach.361` | 220.8 | -103.8 | -1.0 | -43.1 | Nature | 48 | `DD_Nature_SeaGrass_A` | Box |
 | `DD_Nature_SeaGrass_A.Beach.368` | 222.9 | 149.6 | -3.1 | 90.4 | Nature | 48 | `DD_Nature_SeaGrass_A` | Box |
@@ -249,7 +249,7 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Nature_SeaGrass_A.PlotSur.396` | -159.3 | -39.5 | -2.1 | 118.9 | Nature | 48 | `DD_Nature_SeaGrass_A` | Box |
 | `DD_Nature_SeaGrass_A.PlotSur.463` | -152.3 | 140.2 | -2.1 | 29.1 | Nature | 48 | `DD_Nature_SeaGrass_A` | Box |
 | `DD_Nature_SeaGrass_A.PlotSur.478` | -87.4 | 128.2 | -2.1 | -160.0 | Nature | 48 | `DD_Nature_SeaGrass_A` | Box |
-| `DD_Nature_SeaGrass_B` | 971.8 | -132.7 | 0.0 | 0.0 | Nature | 48 | `DD_Nature_SeaGrass_B` | Box |
+| `DD_Nature_SeaGrass_B` | 971.4 | -133.0 | 0.0 | 0.0 | Nature | 48 | `DD_Nature_SeaGrass_B` | Box |
 | `DD_Nature_SeaGrass_B.Beach.327` | 250.9 | 167.2 | -5.9 | 115.8 | Nature | 48 | `DD_Nature_SeaGrass_B` | Box |
 | `DD_Nature_SeaGrass_B.Beach.339` | 213.4 | 116.6 | -0.9 | -8.1 | Nature | 48 | `DD_Nature_SeaGrass_B` | Box |
 | `DD_Nature_SeaGrass_B.Beach.386` | 247.5 | -141.8 | -4.5 | -175.1 | Nature | 48 | `DD_Nature_SeaGrass_B` | Box |
@@ -278,7 +278,7 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Nature_SeaGrass_B.PlotSur.351` | 24.7 | -188.5 | -2.1 | -139.4 | Nature | 48 | `DD_Nature_SeaGrass_B` | Box |
 | `DD_Nature_SeaGrass_B.PlotSur.378` | -102.2 | -149.2 | -2.1 | 52.5 | Nature | 48 | `DD_Nature_SeaGrass_B` | Box |
 | `DD_Nature_SeaGrass_B.PlotSur.431` | -61.1 | 181.3 | -2.1 | 131.8 | Nature | 48 | `DD_Nature_SeaGrass_B` | Box |
-| `DD_Nature_SeaGrass_C` | 990.3 | -132.9 | 0.0 | 0.0 | Nature | 48 | `DD_Nature_SeaGrass_C` | Box |
+| `DD_Nature_SeaGrass_C` | 990.2 | -132.9 | 0.0 | 0.0 | Nature | 48 | `DD_Nature_SeaGrass_C` | Box |
 | `DD_Nature_SeaGrass_C.Beach.334` | 242.8 | 35.3 | -1.1 | -150.8 | Nature | 48 | `DD_Nature_SeaGrass_C` | Box |
 | `DD_Nature_SeaGrass_C.Beach.343` | 247.4 | 144.7 | -4.6 | 150.3 | Nature | 48 | `DD_Nature_SeaGrass_C` | Box |
 | `DD_Nature_SeaGrass_C.Beach.349` | 244.7 | 41.4 | -1.3 | 20.9 | Nature | 48 | `DD_Nature_SeaGrass_C` | Box |
@@ -429,8 +429,8 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Prop_GuttingTable_A.CatchN.168` | 12.9 | 98.2 | 1.3 | 272.9 | Props | 108 | `DD_Prop_GuttingTable_A` | Box |
 | `DD_Prop_HangingFish_A` | 1009.5 | -19.0 | -2.8 | 0.0 | Props | 26 | `DD_Prop_HangingFish_A` | Box |
 | `DD_Prop_HangingFish_B` | 1028.5 | -19.0 | -2.2 | 0.0 | Props | 26 | `DD_Prop_HangingFish_B` | Box |
-| `DD_Prop_HullRepair_A` | 990.5 | -57.0 | -0.2 | 0.0 | Props | 204 | `DD_Prop_HullRepair_A` | Hull |
-| `DD_Prop_HullRepair_A.YardS.000` | 37.5 | -150.4 | -0.2 | 374.0 | Props | 204 | `DD_Prop_HullRepair_A` | Hull |
+| `DD_Prop_HullRepair_A` | 990.5 | -57.0 | -0.2 | 0.0 | Props | 264 | `DD_Prop_HullRepair_A` | Hull |
+| `DD_Prop_HullRepair_A.YardS.000` | 37.5 | -150.4 | -0.2 | 374.0 | Props | 264 | `DD_Prop_HullRepair_A` | Hull |
 | `DD_Prop_MarketStall_A` | 1009.5 | -38.0 | 0.0 | 0.0 | Props | 84 | `DD_Prop_MarketStall_A` | Box |
 | `DD_Prop_MarketStall_A.MarketW.149` | -92.4 | 35.5 | 1.3 | 339.9 | Props | 84 | `DD_Prop_MarketStall_A` | Box |
 | `DD_Prop_MarketStall_A.MarketW.182` | -93.0 | -33.9 | 1.3 | 384.3 | Props | 84 | `DD_Prop_MarketStall_A` | Box |
@@ -441,20 +441,20 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Prop_Net_A.OutfitE.291` | 60.2 | -33.1 | 1.3 | 328.3 | Props | 96 | `DD_Prop_Net_A` | Box |
 | `DD_Prop_Net_A.QuayRim.089` | 155.7 | -27.5 | -0.2 | 206.9 | Props | 96 | `DD_Prop_Net_A` | Box |
 | `DD_Prop_Net_B` | 1066.5 | -18.5 | 0.1 | 0.0 | Props | 96 | `DD_Prop_Net_B` | Box |
-| `DD_Prop_Net_C` | 1086.2 | -18.9 | -0.1 | 0.0 | Props | 96 | `DD_Prop_Net_C` | Box |
+| `DD_Prop_Net_C` | 1085.8 | -19.4 | -0.1 | 0.0 | Props | 96 | `DD_Prop_Net_C` | Box |
 | `DD_Prop_Net_C.CatchN.063` | 26.3 | 79.9 | 1.3 | 48.0 | Props | 96 | `DD_Prop_Net_C` | Box |
 | `DD_Prop_Net_C.OutfitE.036` | 80.8 | 50.4 | 1.3 | 24.8 | Props | 96 | `DD_Prop_Net_C` | Box |
 | `DD_Prop_Net_C.OutfitE.038` | 82.7 | 50.4 | 1.3 | 74.7 | Props | 96 | `DD_Prop_Net_C` | Box |
 | `DD_Prop_Net_C.OutfitE.134` | 107.5 | 74.0 | 1.3 | 133.8 | Props | 96 | `DD_Prop_Net_C` | Box |
 | `DD_Prop_Net_C.QuayRim.180` | 168.8 | -104.2 | -0.2 | 129.8 | Props | 96 | `DD_Prop_Net_C` | Box |
-| `DD_Prop_Rock_A` | 914.6 | -152.0 | -0.0 | 0.0 | Props | 24 | `DD_Prop_Rock_A` | Box |
+| `DD_Prop_Rock_A` | 914.7 | -152.0 | -0.0 | 0.0 | Props | 24 | `DD_Prop_Rock_A` | Box |
 | `DD_Prop_Rock_A.IslandRim.005` | -106.1 | 193.6 | 0.5 | 297.9 | Props | 24 | `DD_Prop_Rock_A` | Box |
 | `DD_Prop_Rock_A.IslandRim.033` | -144.1 | 171.3 | 2.6 | 35.9 | Props | 24 | `DD_Prop_Rock_A` | Box |
 | `DD_Prop_Rock_A.IslandRim.191` | -208.5 | 65.8 | 1.8 | 268.3 | Props | 24 | `DD_Prop_Rock_A` | Box |
 | `DD_Prop_Rock_A.IslandRim.192` | -210.0 | 62.8 | 1.8 | 143.1 | Props | 24 | `DD_Prop_Rock_A` | Box |
 | `DD_Prop_Rock_A.IslandRim.231` | 20.0 | -219.4 | -0.2 | 161.3 | Props | 24 | `DD_Prop_Rock_A` | Box |
 | `DD_Prop_Rock_A.IslandRim.263` | -218.1 | -67.3 | 4.5 | 317.5 | Props | 24 | `DD_Prop_Rock_A` | Box |
-| `DD_Prop_Rock_B` | 933.6 | -151.9 | -0.0 | 0.0 | Props | 24 | `DD_Prop_Rock_B` | Box |
+| `DD_Prop_Rock_B` | 933.5 | -151.9 | -0.0 | 0.0 | Props | 24 | `DD_Prop_Rock_B` | Box |
 | `DD_Prop_Rock_B.Beach.015` | 203.9 | -117.9 | -0.2 | 364.9 | Props | 24 | `DD_Prop_Rock_B` | Box |
 | `DD_Prop_Rock_B.Beach.257` | 250.5 | 16.0 | -1.6 | 180.2 | Props | 24 | `DD_Prop_Rock_B` | Box |
 | `DD_Prop_Rock_B.IslandRim.077` | -222.0 | -18.5 | 3.1 | 229.4 | Props | 24 | `DD_Prop_Rock_B` | Box |
@@ -467,13 +467,13 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Prop_Rock_B.IslandRim.206` | 67.1 | -213.6 | -0.2 | 64.0 | Props | 24 | `DD_Prop_Rock_B` | Box |
 | `DD_Prop_Rock_B.IslandRim.234` | 21.6 | -220.4 | -0.2 | 311.0 | Props | 24 | `DD_Prop_Rock_B` | Box |
 | `DD_Prop_Rock_B.SubNear.137` | 375.0 | -56.0 | -54.4 | -3.4 | Props | 24 | `DD_Prop_Rock_B` | Box |
-| `DD_Prop_Rock_C` | 952.6 | -152.0 | -0.0 | 0.0 | Props | 24 | `DD_Prop_Rock_C` | Box |
+| `DD_Prop_Rock_C` | 952.8 | -152.0 | -0.0 | 0.0 | Props | 24 | `DD_Prop_Rock_C` | Box |
 | `DD_Prop_Rock_C.IslandRim.006` | -102.8 | 194.1 | 0.4 | 200.4 | Props | 24 | `DD_Prop_Rock_C` | Box |
 | `DD_Prop_Rock_C.IslandRim.030` | 140.2 | -173.0 | -0.2 | 199.7 | Props | 24 | `DD_Prop_Rock_C` | Box |
 | `DD_Prop_Rock_C.IslandRim.163` | 106.1 | -202.9 | -0.2 | 68.9 | Props | 24 | `DD_Prop_Rock_C` | Box |
 | `DD_Prop_Rock_C.IslandRim.233` | 16.8 | -219.0 | -0.2 | 168.2 | Props | 24 | `DD_Prop_Rock_C` | Box |
 | `DD_Prop_Rock_C.SubNear.023` | 296.6 | -106.1 | -19.9 | 55.6 | Props | 24 | `DD_Prop_Rock_C` | Box |
-| `DD_Prop_Rock_D` | 971.1 | -151.7 | -0.0 | 0.0 | Props | 24 | `DD_Prop_Rock_D` | Box |
+| `DD_Prop_Rock_D` | 971.5 | -151.7 | -0.0 | 0.0 | Props | 24 | `DD_Prop_Rock_D` | Box |
 | `DD_Prop_Rock_D.Beach.014` | 206.8 | -115.6 | -0.4 | 276.4 | Props | 24 | `DD_Prop_Rock_D` | Box |
 | `DD_Prop_Rock_D.Beach.085` | 295.0 | 36.0 | -5.5 | 150.4 | Props | 24 | `DD_Prop_Rock_D` | Box |
 | `DD_Prop_Rock_D.Beach.086` | 298.1 | 33.3 | -5.8 | 161.3 | Props | 24 | `DD_Prop_Rock_D` | Box |
@@ -482,7 +482,7 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Prop_Rock_D.SubNear.080` | 340.9 | -123.9 | -47.5 | 200.7 | Props | 24 | `DD_Prop_Rock_D` | Box |
 | `DD_Prop_Rock_D.SubNear.112` | 391.6 | -146.0 | -57.7 | 373.9 | Props | 24 | `DD_Prop_Rock_D` | Box |
 | `DD_Prop_Rock_D.SubNear.280` | 367.3 | -21.6 | -52.8 | 93.0 | Props | 24 | `DD_Prop_Rock_D` | Box |
-| `DD_Prop_Rock_E` | 990.7 | -151.9 | -0.0 | 0.0 | Props | 24 | `DD_Prop_Rock_E` | Box |
+| `DD_Prop_Rock_E` | 990.5 | -152.0 | -0.0 | 0.0 | Props | 24 | `DD_Prop_Rock_E` | Box |
 | `DD_Prop_Rock_E.IslandRim.034` | -137.1 | 169.9 | 0.8 | 254.2 | Props | 24 | `DD_Prop_Rock_E` | Box |
 | `DD_Prop_Rock_E.IslandRim.084` | -154.5 | -143.2 | -0.2 | 12.6 | Props | 24 | `DD_Prop_Rock_E` | Box |
 | `DD_Prop_Rock_E.IslandRim.232` | 20.1 | -223.0 | -0.2 | 318.2 | Props | 24 | `DD_Prop_Rock_E` | Box |
@@ -503,10 +503,10 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Prop_RopeCoil_B.OutfitE.225` | 45.8 | 27.2 | 1.3 | 184.7 | Props | 96 | `DD_Prop_RopeCoil_B` | Box |
 | `DD_Prop_RopeCoil_B.OutfitE.292` | 54.9 | -32.3 | 1.3 | 100.5 | Props | 96 | `DD_Prop_RopeCoil_B` | Box |
 | `DD_Prop_RopeCoil_B.QuayRim.093` | 216.3 | 36.8 | -0.2 | 7.6 | Props | 96 | `DD_Prop_RopeCoil_B` | Box |
-| `DD_Prop_Rowboat_A` | 1009.5 | -57.0 | 0.3 | 0.0 | Props | 72 | `DD_Prop_Rowboat_A` | Box |
-| `DD_Prop_Rowboat_A.BallastS.048` | -36.7 | -93.0 | 1.3 | 423.7 | Props | 72 | `DD_Prop_Rowboat_A` | Box |
-| `DD_Prop_Rowboat_A.BallastS.199` | 36.0 | -75.4 | 1.3 | 28.6 | Props | 72 | `DD_Prop_Rowboat_A` | Box |
-| `DD_Prop_Rowboat_A.BallastS.236` | 33.0 | -93.3 | 1.3 | 477.3 | Props | 72 | `DD_Prop_Rowboat_A` | Box |
+| `DD_Prop_Rowboat_A` | 1009.5 | -57.0 | 0.3 | 0.0 | Props | 132 | `DD_Prop_Rowboat_A` | Box |
+| `DD_Prop_Rowboat_A.BallastS.048` | -36.7 | -93.0 | 1.3 | 423.7 | Props | 132 | `DD_Prop_Rowboat_A` | Box |
+| `DD_Prop_Rowboat_A.BallastS.199` | 36.0 | -75.4 | 1.3 | 28.6 | Props | 132 | `DD_Prop_Rowboat_A` | Box |
+| `DD_Prop_Rowboat_A.BallastS.236` | 33.0 | -93.3 | 1.3 | 477.3 | Props | 132 | `DD_Prop_Rowboat_A` | Box |
 | `DD_Prop_SaltVat_A` | 933.5 | -76.0 | 0.0 | 0.0 | Props | 96 | `DD_Prop_SaltVat_A` | Box |
 | `DD_Prop_SaltVat_A.CatchN.044` | -22.7 | 80.4 | 1.3 | 288.4 | Props | 96 | `DD_Prop_SaltVat_A` | Box |
 | `DD_Prop_SaltVat_B` | 952.5 | -76.0 | 0.0 | 0.0 | Props | 96 | `DD_Prop_SaltVat_B` | Box |
@@ -674,7 +674,7 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Sub_Anchor_B.SubNear.042` | 341.5 | 126.1 | -47.6 | 201.4 | Underwater | 120 | `DD_Sub_Anchor_B` | Box |
 | `DD_Sub_Anchor_B.SubNear.140` | 377.7 | -56.8 | -54.9 | 249.9 | Underwater | 120 | `DD_Sub_Anchor_B` | Box |
 | `DD_Sub_Anchor_B.SubNear.278` | 366.5 | -18.4 | -52.7 | 302.7 | Underwater | 120 | `DD_Sub_Anchor_B` | Box |
-| `DD_Sub_Ballast_A` | 914.1 | -132.5 | 0.2 | 0.0 | Underwater | 72 | `DD_Sub_Ballast_A` | Box |
+| `DD_Sub_Ballast_A` | 914.8 | -133.3 | -0.0 | 0.0 | Underwater | 72 | `DD_Sub_Ballast_A` | Box |
 | `DD_Sub_Ballast_A.BallastS.315` | 10.2 | -95.1 | 1.3 | 136.5 | Underwater | 72 | `DD_Sub_Ballast_A` | Box |
 | `DD_Sub_Ballast_A.BallastS.317` | 14.7 | -97.0 | 1.3 | 37.6 | Underwater | 72 | `DD_Sub_Ballast_A` | Box |
 | `DD_Sub_Ballast_A.Beach.087` | 292.2 | 37.8 | -5.3 | 224.1 | Underwater | 72 | `DD_Sub_Ballast_A` | Box |
@@ -687,7 +687,7 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Sub_Ballast_A.SubNear.195` | 413.0 | 22.8 | -62.1 | 4.0 | Underwater | 72 | `DD_Sub_Ballast_A` | Box |
 | `DD_Sub_Ballast_A.SubNear.209` | 323.4 | -53.5 | -37.2 | 340.5 | Underwater | 72 | `DD_Sub_Ballast_A` | Box |
 | `DD_Sub_Ballast_A.SubNear.260` | 356.3 | -93.4 | -50.6 | 262.1 | Underwater | 72 | `DD_Sub_Ballast_A` | Box |
-| `DD_Sub_Ballast_B` | 933.3 | -133.2 | -0.1 | 0.0 | Underwater | 96 | `DD_Sub_Ballast_B` | Box |
+| `DD_Sub_Ballast_B` | 933.2 | -133.3 | -0.1 | 0.0 | Underwater | 96 | `DD_Sub_Ballast_B` | Box |
 | `DD_Sub_Ballast_B.BallastS.319` | 13.3 | -102.0 | 1.3 | 239.5 | Underwater | 96 | `DD_Sub_Ballast_B` | Box |
 | `DD_Sub_Ballast_B.Beach.256` | 247.2 | 18.6 | -1.3 | 355.7 | Underwater | 96 | `DD_Sub_Ballast_B` | Box |
 | `DD_Sub_Ballast_B.IslandRim.003` | -105.0 | 195.8 | 0.7 | 97.9 | Underwater | 96 | `DD_Sub_Ballast_B` | Box |
@@ -716,7 +716,7 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Sub_Buoy_C` | 1085.5 | -95.0 | 0.0 | 0.0 | Underwater | 66 | `DD_Sub_Buoy_C` | Box |
 | `DD_Sub_Buoy_C.SubNear.028` | 399.0 | -54.8 | -59.2 | 34.9 | Underwater | 66 | `DD_Sub_Buoy_C` | Box |
 | `DD_Sub_Buoy_C.SubNear.196` | 415.5 | 17.1 | -62.6 | 183.2 | Underwater | 66 | `DD_Sub_Buoy_C` | Box |
-| `DD_Sub_Coral_A` | 1028.7 | -113.7 | 0.1 | 0.0 | Underwater | 48 | `DD_Sub_Coral_A` | Box |
+| `DD_Sub_Coral_A` | 1028.7 | -113.7 | 0.2 | 0.0 | Underwater | 48 | `DD_Sub_Coral_A` | Box |
 | `DD_Sub_Coral_A.SubNear.019` | 269.5 | -163.0 | -19.8 | 200.7 | Underwater | 48 | `DD_Sub_Coral_A` | Box |
 | `DD_Sub_Coral_A.SubNear.078` | 344.7 | -125.9 | -48.2 | 12.7 | Underwater | 48 | `DD_Sub_Coral_A` | Box |
 | `DD_Sub_Coral_A.SubNear.148` | 306.4 | 79.8 | -22.1 | 56.6 | Underwater | 48 | `DD_Sub_Coral_A` | Box |
@@ -725,7 +725,7 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Sub_Coral_A.SubNear.272` | 280.7 | -136.0 | -15.6 | 282.3 | Underwater | 48 | `DD_Sub_Coral_A` | Box |
 | `DD_Sub_Coral_A.SubNear.309` | 376.6 | 185.5 | -54.7 | 63.5 | Underwater | 48 | `DD_Sub_Coral_A` | Box |
 | `DD_Sub_Coral_A.SubNear.312` | 373.4 | 180.2 | -54.0 | 163.1 | Underwater | 48 | `DD_Sub_Coral_A` | Box |
-| `DD_Sub_Coral_B` | 1047.6 | -114.4 | -0.1 | 0.0 | Underwater | 72 | `DD_Sub_Coral_B` | Box |
+| `DD_Sub_Coral_B` | 1046.9 | -114.0 | -0.1 | 0.0 | Underwater | 72 | `DD_Sub_Coral_B` | Box |
 | `DD_Sub_Coral_B.SubNear.039` | 344.7 | 125.9 | -48.2 | 252.5 | Underwater | 72 | `DD_Sub_Coral_B` | Box |
 | `DD_Sub_Coral_B.SubNear.109` | 391.7 | -143.1 | -57.8 | 197.9 | Underwater | 72 | `DD_Sub_Coral_B` | Box |
 | `DD_Sub_Coral_B.SubNear.138` | 371.3 | -54.2 | -53.6 | 47.5 | Underwater | 72 | `DD_Sub_Coral_B` | Box |
@@ -735,14 +735,14 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Sub_Coral_B.SubNear.273` | 284.2 | -139.0 | -21.7 | 358.9 | Underwater | 72 | `DD_Sub_Coral_B` | Box |
 | `DD_Sub_Coral_B.SubNear.283` | 358.7 | 218.2 | -51.1 | 124.5 | Underwater | 72 | `DD_Sub_Coral_B` | Box |
 | `DD_Sub_Coral_B.SubNear.310` | 376.0 | 183.7 | -54.6 | 71.7 | Underwater | 72 | `DD_Sub_Coral_B` | Box |
-| `DD_Sub_Coral_C` | 1066.5 | -113.9 | -0.4 | 0.0 | Underwater | 96 | `DD_Sub_Coral_C` | Box |
+| `DD_Sub_Coral_C` | 1067.1 | -114.2 | -0.1 | 0.0 | Underwater | 96 | `DD_Sub_Coral_C` | Box |
 | `DD_Sub_Coral_C.SubNear.147` | 305.6 | 76.2 | -19.9 | 273.0 | Underwater | 96 | `DD_Sub_Coral_C` | Box |
 | `DD_Sub_Coral_C.SubNear.167` | 416.0 | -23.1 | -62.7 | 122.9 | Underwater | 96 | `DD_Sub_Coral_C` | Box |
 | `DD_Sub_Coral_C.SubNear.208` | 321.2 | -52.8 | -34.2 | 77.4 | Underwater | 96 | `DD_Sub_Coral_C` | Box |
 | `DD_Sub_Coral_C.SubNear.223` | 370.0 | 17.1 | -53.4 | 349.2 | Underwater | 96 | `DD_Sub_Coral_C` | Box |
 | `DD_Sub_Coral_C.SubNear.228` | 305.2 | -78.0 | -19.9 | 36.8 | Underwater | 96 | `DD_Sub_Coral_C` | Box |
 | `DD_Sub_Coral_C.SubNear.258` | 355.6 | -90.9 | -50.4 | 175.7 | Underwater | 96 | `DD_Sub_Coral_C` | Box |
-| `DD_Sub_Coral_D` | 1085.8 | -113.8 | 0.3 | 0.0 | Underwater | 48 | `DD_Sub_Coral_D` | Box |
+| `DD_Sub_Coral_D` | 1086.2 | -114.4 | 0.0 | 0.0 | Underwater | 48 | `DD_Sub_Coral_D` | Box |
 | `DD_Sub_Coral_D.SubNear.113` | 391.0 | -141.0 | -57.6 | 58.5 | Underwater | 48 | `DD_Sub_Coral_D` | Box |
 | `DD_Sub_Coral_D.SubNear.130` | 330.7 | 157.5 | -45.4 | 351.1 | Underwater | 48 | `DD_Sub_Coral_D` | Box |
 | `DD_Sub_Coral_D.SubNear.197` | 413.1 | 19.8 | -62.1 | 71.8 | Underwater | 48 | `DD_Sub_Coral_D` | Box |
@@ -761,7 +761,7 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Sub_CrabPot_A.SubNear.166` | 415.7 | -18.6 | -62.6 | 130.2 | Underwater | 72 | `DD_Sub_CrabPot_A` | Box |
 | `DD_Sub_CrabPot_A.SubNear.279` | 369.1 | -18.9 | -53.2 | 122.0 | Underwater | 72 | `DD_Sub_CrabPot_A` | Box |
 | `DD_Sub_CrabPot_A.SubNear.286` | 357.9 | 221.3 | -50.9 | 206.3 | Underwater | 72 | `DD_Sub_CrabPot_A` | Box |
-| `DD_Sub_CrabPot_B` | 1028.4 | -95.0 | 0.1 | 0.0 | Underwater | 36 | `DD_Sub_CrabPot_B` | Box |
+| `DD_Sub_CrabPot_B` | 1028.6 | -94.9 | 0.1 | 0.0 | Underwater | 36 | `DD_Sub_CrabPot_B` | Box |
 | `DD_Sub_CrabPot_B.QuayRim.270` | 212.1 | 62.9 | -0.2 | 54.5 | Underwater | 36 | `DD_Sub_CrabPot_B` | Box |
 | `DD_Sub_CrabPot_B.SubNear.016` | 268.5 | -164.7 | -19.9 | 67.3 | Underwater | 36 | `DD_Sub_CrabPot_B` | Box |
 | `DD_Sub_CrabPot_B.SubNear.040` | 343.4 | 129.0 | -48.0 | 130.5 | Underwater | 36 | `DD_Sub_CrabPot_B` | Box |
@@ -769,7 +769,7 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Sub_CrabPot_B.SubNear.059` | 394.2 | 141.8 | -58.3 | 125.2 | Underwater | 36 | `DD_Sub_CrabPot_B` | Box |
 | `DD_Sub_CrabPot_B.SubNear.141` | 376.8 | -55.3 | -54.7 | 14.9 | Underwater | 36 | `DD_Sub_CrabPot_B` | Box |
 | `DD_Sub_CrabPot_B.SubNear.222` | 365.7 | 14.9 | -52.5 | 185.1 | Underwater | 36 | `DD_Sub_CrabPot_B` | Box |
-| `DD_Sub_Kelp_A` | 952.0 | -114.2 | 0.0 | 0.0 | Underwater | 48 | `DD_Sub_Kelp_A` | Box |
+| `DD_Sub_Kelp_A` | 953.5 | -113.8 | 0.0 | 0.0 | Underwater | 48 | `DD_Sub_Kelp_A` | Box |
 | `DD_Sub_Kelp_A.SubNear.025` | 296.0 | -111.0 | -21.4 | 345.0 | Underwater | 48 | `DD_Sub_Kelp_A` | Box |
 | `DD_Sub_Kelp_A.SubNear.054` | 314.5 | 188.3 | -42.1 | 294.1 | Underwater | 48 | `DD_Sub_Kelp_A` | Box |
 | `DD_Sub_Kelp_A.SubNear.123` | 409.8 | 60.7 | -61.4 | 351.1 | Underwater | 48 | `DD_Sub_Kelp_A` | Box |
@@ -777,7 +777,7 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Sub_Kelp_A.SubNear.211` | 322.6 | -58.4 | -37.3 | 166.6 | Underwater | 48 | `DD_Sub_Kelp_A` | Box |
 | `DD_Sub_Kelp_A.SubNear.249` | 331.6 | -200.6 | -45.6 | 208.5 | Underwater | 48 | `DD_Sub_Kelp_A` | Box |
 | `DD_Sub_Kelp_A.SubNear.311` | 376.2 | 179.0 | -54.6 | 307.0 | Underwater | 48 | `DD_Sub_Kelp_A` | Box |
-| `DD_Sub_Kelp_B` | 971.2 | -112.9 | 0.0 | 0.0 | Underwater | 72 | `DD_Sub_Kelp_B` | Box |
+| `DD_Sub_Kelp_B` | 972.1 | -113.3 | 0.0 | 0.0 | Underwater | 72 | `DD_Sub_Kelp_B` | Box |
 | `DD_Sub_Kelp_B.SubNear.024` | 292.8 | -111.1 | -17.4 | 250.6 | Underwater | 72 | `DD_Sub_Kelp_B` | Box |
 | `DD_Sub_Kelp_B.SubNear.079` | 342.9 | -125.4 | -47.9 | 123.2 | Underwater | 72 | `DD_Sub_Kelp_B` | Box |
 | `DD_Sub_Kelp_B.SubNear.110` | 393.5 | -144.6 | -58.1 | 218.3 | Underwater | 72 | `DD_Sub_Kelp_B` | Box |
@@ -785,14 +785,14 @@ Instancing is preserved through export: objects sharing a mesh datablock share o
 | `DD_Sub_Kelp_B.SubNear.229` | 303.2 | -75.7 | -16.4 | 79.6 | Underwater | 72 | `DD_Sub_Kelp_B` | Box |
 | `DD_Sub_Kelp_B.SubNear.285` | 354.4 | 219.6 | -50.2 | 228.2 | Underwater | 72 | `DD_Sub_Kelp_B` | Box |
 | `DD_Sub_Kelp_B.SubNear.313` | 377.4 | 182.5 | -54.9 | 85.3 | Underwater | 72 | `DD_Sub_Kelp_B` | Box |
-| `DD_Sub_Kelp_C` | 991.1 | -113.1 | 0.0 | 0.0 | Underwater | 48 | `DD_Sub_Kelp_C` | Box |
+| `DD_Sub_Kelp_C` | 991.3 | -114.7 | 0.0 | 0.0 | Underwater | 48 | `DD_Sub_Kelp_C` | Box |
 | `DD_Sub_Kelp_C.SubNear.111` | 392.9 | -141.5 | -58.0 | 151.4 | Underwater | 48 | `DD_Sub_Kelp_C` | Box |
 | `DD_Sub_Kelp_C.SubNear.146` | 302.5 | 77.8 | -16.2 | 72.3 | Underwater | 48 | `DD_Sub_Kelp_C` | Box |
 | `DD_Sub_Kelp_C.SubNear.187` | 366.1 | 56.7 | -52.6 | 2.7 | Underwater | 48 | `DD_Sub_Kelp_C` | Box |
 | `DD_Sub_Kelp_C.SubNear.207` | 323.0 | -56.0 | -37.3 | 248.9 | Underwater | 48 | `DD_Sub_Kelp_C` | Box |
 | `DD_Sub_Kelp_C.SubNear.213` | 385.6 | -220.1 | -56.5 | 316.9 | Underwater | 48 | `DD_Sub_Kelp_C` | Box |
 | `DD_Sub_Kelp_C.SubNear.267` | 358.0 | 88.5 | -50.9 | 163.7 | Underwater | 48 | `DD_Sub_Kelp_C` | Box |
-| `DD_Sub_Kelp_D` | 1008.2 | -114.3 | 0.0 | 0.0 | Underwater | 72 | `DD_Sub_Kelp_D` | Box |
+| `DD_Sub_Kelp_D` | 1009.4 | -114.0 | 0.0 | 0.0 | Underwater | 72 | `DD_Sub_Kelp_D` | Box |
 | `DD_Sub_Kelp_D.SubNear.018` | 271.0 | -164.1 | -22.4 | 227.6 | Underwater | 72 | `DD_Sub_Kelp_D` | Box |
 | `DD_Sub_Kelp_D.SubNear.053` | 312.8 | 191.9 | -41.8 | 30.3 | Underwater | 72 | `DD_Sub_Kelp_D` | Box |
 | `DD_Sub_Kelp_D.SubNear.055` | 310.9 | 192.0 | -41.4 | 285.1 | Underwater | 72 | `DD_Sub_Kelp_D` | Box |

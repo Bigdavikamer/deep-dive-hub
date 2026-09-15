@@ -237,6 +237,25 @@ LIT_LANTERN_SITES = [
 WARM_ACCENT_MAX_PER_DISTRICT = 2
 DEPTH_DARKEN_STRENGTH = 0.35
 
+# ---- polish pass: cavity/AO and terrain colour blend ------------------------
+# CAVITY_DARKEN_STRENGTH: concave-edge and ground-contact darkening, baked into
+# vertex colour across every mesh in the scene (not just water/recessed
+# geometry) -- see lib.mood.apply_cavity_darken.
+CAVITY_DARKEN_STRENGTH = 0.4
+# TERRAIN_BLEND_BANDS: (z_min, z_max, max_slope_deg) -> PALETTE key. Replaces
+# the island terrain's flat single tone with a height/slope-driven vertex-
+# colour gradient -- see lib.mood.apply_terrain_blend. Two bands can share a
+# z-range at different slope caps (stone_light at <=20deg, stone_dark up to
+# vertical at <=90deg): the tighter cap wins on flat ground, the looser one
+# takes over on steep faces (terrace risers, cliffs).
+TERRAIN_BLEND_BANDS = {
+    (-1.0,  0.5,  90): "sand_wet",
+    ( 0.5,  4.0,  35): "sand_dry",
+    ( 4.0,  999,  20): "stone_light",
+    ( 4.0,  999,  90): "stone_dark",
+}
+TERRAIN_MOSS_NORTH_BIAS = 0.6
+
 # ---- style -----------------------------------------------------------------
 BEVEL_WIDTH       = 0.6      # studs; applied to all hard structural edges
 BEVEL_SEGMENTS    = 1

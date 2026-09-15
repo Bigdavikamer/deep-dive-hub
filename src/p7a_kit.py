@@ -137,6 +137,27 @@ def rope_coil(bm, v, rng):
                     (0, rw * math.cos(a1), 2.4 + rh * math.sin(a1)), 0.48)
 
 
+def _rope_wrap(bm, center, radius, axis="z", turns=5, thickness=0.13):
+    """A short lashing: a tight ring of struts around `center`, the same
+    technique rope_coil() uses for its flat coil, just small and oriented to
+    wrap a beam. `axis` is the beam's own long axis -- the ring lies in the
+    plane perpendicular to it."""
+    cx, cy, cz = center
+    for i in range(turns):
+        a0 = 2.0 * math.pi * i / turns
+        a1 = 2.0 * math.pi * (i + 1) / turns
+        if axis == "x":
+            p0 = (cx, cy + radius * math.cos(a0), cz + radius * math.sin(a0))
+            p1 = (cx, cy + radius * math.cos(a1), cz + radius * math.sin(a1))
+        elif axis == "y":
+            p0 = (cx + radius * math.cos(a0), cy, cz + radius * math.sin(a0))
+            p1 = (cx + radius * math.cos(a1), cy, cz + radius * math.sin(a1))
+        else:
+            p0 = (cx + radius * math.cos(a0), cy + radius * math.sin(a0), cz)
+            p1 = (cx + radius * math.cos(a1), cy + radius * math.sin(a1), cz)
+        P.strut(bm, p0, p1, thickness)
+
+
 def rope_line(bm, v, rng):
     """Modular overhead span. The highest-value, lowest-cost thing in the kit:
     a line with hangers transforms a whole plaza quarter for ~200 tris."""
@@ -310,6 +331,10 @@ def rowboat(bm, v, rng):
         w = 3.2 * math.sin(math.pi * (0.18 + 0.64 * t))
         P.box(bm, (-5.0 + t * 10.0, 0, 1.1), (2.2, w, 1.6))
     P.box(bm, (0, 0, 2.1), (10.4, 0.6, 0.5))
+    # a rope lashing around the keel -- a temporary repair holding a split
+    # board together, not decoration; see _hull_weather() for the paired
+    # material marks (patched plank, tar seam, waterline ring)
+    _rope_wrap(bm, (1.5, 0, 2.1), 0.5, axis="x", turns=5, thickness=0.12)
 
 
 def hull_repair(bm, v, rng):
@@ -325,6 +350,9 @@ def hull_repair(bm, v, rng):
         for sy in (-1, 1):
             P.strut(bm, (sx * 4.5, 0, 2.9), (sx * 5.2, sy * 2.2, 0.0), 0.5)
         P.box(bm, (sx * 4.8, 0, 3.0), (0.6, 5.0, 0.5))
+    # a rope lashing at one trestle joint -- ties the diagonal leg to the
+    # rail; see _hull_weather() for the paired material marks
+    _rope_wrap(bm, (4.8, 1.8, 3.0), 0.45, axis="y", turns=5, thickness=0.12)
 
 
 def buoy(bm, v, rng):
@@ -683,9 +711,47 @@ def build():
                 dd_mood.mark_all(obj, dd_mood.GLOW_SLOT)
             if key in ("NoticeBoard", "TallyBoard"):
                 _uv_front_quad(obj)
+            if key in ("HullRepair", "Rowboat"):
+                _hull_weather(obj, key)
             made.append(obj)
             index += 1
     return made
+
+
+def _hull_weather(obj, key):
+    """Three material-only marks that turn the hull/rowboat's single flat
+    tone into something that shows its age: a patched plank in a visibly
+    different tone, a tarred seam, and a barnacle/waterline ring at the
+    height the hull actually sits. Paired with the rope lashing each builder
+    adds directly -- Gate 3 flagged the kit averaging 84 tris against much
+    higher per-asset budgets, and this is that headroom spent on a handful
+    of deliberate marks rather than an even increase everywhere.
+
+    Bands are fractions of the mesh's OWN height, read AFTER
+    set_origin_to_base (base at local Z=0), rather than hand-derived
+    absolute Z -- holds regardless of the builder's internal offsets.
+    """
+    zs = [v.co.z for v in obj.data.vertices]
+    z0, z1 = min(zs), max(zs)
+    span = max(z1 - z0, 1e-4)
+    seam_z = z0 + 0.78 * span
+
+    # waterline / barnacle ring: the lowest slice, where the hull actually
+    # touches the ground
+    dd_mood.mark_where(obj, lambda c: c.z <= z0 + 0.10 * span, dd_mood.WEATHER_RING_SLOT)
+    # tar seam: the keel (rowboat) / the cross-braces over the exposed ribs
+    # (hull repair) -- the top band in both builders
+    dd_mood.mark_where(obj, lambda c: c.z >= seam_z, dd_mood.WEATHER_DARK_SLOT)
+
+    if key == "Rowboat":
+        # patched plank: hull segment index 3 (x centred 2.5, half-width 1.1)
+        dd_mood.mark_where(
+            obj, lambda c: 1.4 <= c.x <= 3.6 and c.z < seam_z, dd_mood.WEATHER_LIGHT_SLOT)
+    else:  # HullRepair
+        # patched plank: rib index 2 (x centred -1.4, half-width 1.3)
+        dd_mood.mark_where(
+            obj, lambda c: -2.7 <= c.x <= -0.1 and z0 + 0.25 * span <= c.z < seam_z,
+            dd_mood.WEATHER_LIGHT_SLOT)
 
 
 def _uv_front_quad(obj):
